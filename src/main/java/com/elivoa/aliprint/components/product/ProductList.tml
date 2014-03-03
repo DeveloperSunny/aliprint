@@ -1,0 +1,37 @@
+<html xmlns:t="http://tapestry.apache.org/schema/tapestry_5_3.xsd">
+<t:content>
+	<div style="border: 20px solid #f5f5dc;">
+		<div>
+			<div>
+				<strong><em>产品列表</em></strong> &lt;&lt;一共&nbsp;${products.total} 条产品
+			</div>
+
+			<table border="1" style="border-collapse: collapse;">
+				<thead>
+					<tr>
+						<td>ID</td>
+						<td>Subject</td>
+						<td>Alias</td>
+						<td>QualityLevel</td>
+						<td>Weight</td>
+						<td>Status</td>
+					</tr>
+				</thead>
+				<tbody>
+					<t:loop source="products.returns" value="product">
+						<tr>
+							<td>${product.offerId}</td>
+							<td>${product.subject}</td>
+							<td><input type="text" value="别名" /></td>
+							<td>${product.qualityLevel}</td>
+							<td>${product.productUnitWeight}</td>
+							<td>${product.offerStatus}</td>
+						</tr>
+					</t:loop>
+				</tbody>
+			</table>
+
+		</div>
+	</div>
+</t:content>
+</html>
