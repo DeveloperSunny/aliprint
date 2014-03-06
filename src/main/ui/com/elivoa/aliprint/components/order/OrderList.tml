@@ -1,0 +1,210 @@
+<html xmlns:t="http://tapestry.apache.org/schema/tapestry_5_3.xsd">
+<t:content>
+
+	<div>快递单打印: 共计 ${orders.total} 条。</div>
+	<ul class="M_list">
+
+		<li>
+			<table class="M_tbl Pr_list">
+				<tr>
+					<td class="header" colspan="5"><a class="detail" href="#">查看详情&raquo;</a> <input
+						type="checkbox" /> <span class="no">订单号：1231232194574385</span> <span
+						class="S-vline S-textB">|</span> <span class="time">付款时间：2014-03-03 15：30</span> <span
+						class="S-vline S-textB">|</span> <a href="#" class="company S-linkB">安徽甜昕薇儿服饰有限公司</a> <span
+						class="S-vline S-textB">|</span> <a href="#" class="wangwang S-linkB"><i
+							class="Ico-wangwang"></i>甜昕薇儿</a></td>
+				</tr>
+				<tr>
+					<td valign="top">
+						<div class="product">
+							<div class="M_img_50">
+								<a href="#"><img src="images/product.png" /></a>
+							</div>
+							<div class="info">
+								<p>
+									<a href="#">菠萝花开衫</a>
+								</p>
+								<p class="S-textB">
+									颜色：<strong>红色</strong>
+								</p>
+								<p class="S-textB">
+									尺码：<strong>均码</strong>
+								</p>
+							</div>
+							<div class="send"></div>
+						</div>
+					</td>
+					<td width="40" align="center">
+						<div class="num">10</div>
+					</td>
+					<td rowspan="2" width="80">
+						<div class="S-textB">部分发货</div>
+					</td>
+					<td rowspan="2" width="300">
+						<div>
+							<strong>李礼</strong>，18610410795，浙江省 嘉兴市 桐乡市 濮院中央商城温州街377
+						</div>
+						<div class="note S-textB">
+							<strong>备注信息：</strong>发顺丰
+						</div>
+						<div class="note S-textB">
+							<strong>客户留言：</strong>发顺丰
+						</div>
+					</td>
+					<td rowspan="2" width="100">
+						<div>
+							<i class="Ico-print"></i> <a href="#">打印快递单</a>
+						</div>
+						<div>
+							<i class="Ico-tracking"></i> <a href="#">输入单号</a>
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<td valign="top">
+						<div class="product">
+							<div class="M_img_50">
+								<a href="#"><img src="images/product.png" /></a>
+							</div>
+							<div class="info">
+								<p>
+									<a href="#">菠萝花开衫</a>
+								</p>
+								<p class="S-textB">
+									颜色：<strong>红色</strong>
+								</p>
+								<p class="S-textB">
+									尺码：<strong>均码</strong>
+								</p>
+							</div>
+						</div>
+					</td>
+					<td width="40" align="center">
+						<div class="num">10</div>
+					</td>
+				</tr>
+				<tr>
+					<td class="footer" colspan="5">
+						<div class="total">
+							合计：<strong>20</strong>件 <span class="S-price">1490</span>元<span class="S-textB">（运费10元）</span>
+						</div>
+						<div>
+							<span class="from">发件人：黄小姐 1502348888 </span><a class="S-linkB" href="#"><i
+								class="Ico-edit"></i>编辑发件人</a>
+						</div>
+					</td>
+				</tr>
+			</table>
+		</li>
+
+		<t:loop source="orders.models" value="order">
+			<li>
+				<table class="M_tbl Pr_list">
+					<tr>
+						<td class="header" colspan="5"><a class="detail" target="_black"
+							href="${order.orderDetailsLink}">查看详情&raquo;</a> <input type="checkbox" /> <span
+							class="no">订单号：${order.id}</span> <span class="S-vline S-textB">|</span> <span class="time">付款时间：${order.gmtPayment}</span>
+							<span class="S-vline S-textB">|</span> <a href="#" class="company S-linkB">${order.buyerCompanyName}</a>
+							<span class="S-vline S-textB">|</span> <a href="#" class="wangwang S-linkB"><i
+								class="Ico-wangwang"></i>${order.buyerLoginId}</a></td>
+					</tr>
+
+					<t:loop source="order.entities" value="entity" index="index">
+						<tr>
+							<td valign="top">
+								<div class="product">
+									<div class="M_img_50">
+										<a href="#"><img src="images/product.png" /></a>
+									</div>
+									<div class="info">
+										<p>
+											<a href="#">${entity.productName}</a>
+										</p>
+										<p class="S-textB">
+											颜色：<strong>红色</strong>
+										</p>
+										<p class="S-textB">
+											尺码：<strong>均码</strong>
+										</p>
+									</div>
+									<t:if test="isSend">
+										<div class="send"></div>
+									</t:if>
+								</div>
+							</td>
+							<td width="40" align="center">
+								<div class="num">
+									<t:outputraw value="entityQuantityHTML" />
+								</div>
+							</td>
+
+							<t:if test="isFirstEntity">
+								<td rowspan="${order.entities.size()}" width="80">
+									<div class="S-textB">${order.partlyDelivery}</div>
+								</td>
+								<td rowspan="${order.entities.size()}" width="300">
+									<div>
+										<strong>李礼 TODO</strong>，18610410795，${order.toArea} (${order.toPost})
+									</div>
+									<div class="note S-textB">
+										<strong>备注信息：</strong>发顺丰
+									</div>
+									<div class="note S-textB">
+										<strong>客户留言：</strong>发顺丰
+									</div>
+								</td>
+								<td rowspan="${order.entities.size()}" width="100">
+									<div>
+										<i class="Ico-print"></i> <a href="#">打印快递单</a>
+									</div>
+									<div>
+										<i class="Ico-tracking"></i> <a href="#">输入单号</a>
+									</div>
+								</td>
+							</t:if>
+						</tr>
+
+					</t:loop>
+
+					<!-- 
+					<tr>
+						<td valign="top">
+							<div class="product">
+								<div class="M_img_50">
+									<a href="#"><img src="images/product.png" /></a>
+								</div>
+								<div class="info">
+									<p>
+										<a href="#">菠萝花开衫</a>
+									</p>
+									<p class="S-textB">
+										颜色：<strong>红色</strong>
+									</p>
+									<p class="S-textB">
+										尺码：<strong>均码</strong>
+									</p>
+								</div>
+							</div>
+						</td>
+						<td width="40" align="center">
+							<div class="num">10</div>
+						</td>
+					</tr>
+	 -->
+					<tr>
+						<td class="footer" colspan="5">
+							<div class="total">
+								合计：<strong>${order.totalProducts}</strong> 件 <span class="S-price">${order.sumPaymentDouble}</span>元<span class="S-textB">（运费${order.carriageDouble}元）</span>
+							</div>
+							<div>
+								<span class="from">发件人：黄小姐 1502348888 </span><a class="S-linkB" href="#"><i
+									class="Ico-edit"></i>编辑发件人</a>
+							</div>
+						</td>
+					</tr>
+				</table>
+			</li>
+		</t:loop>
+	</ul>
+</t:content>
+</html>

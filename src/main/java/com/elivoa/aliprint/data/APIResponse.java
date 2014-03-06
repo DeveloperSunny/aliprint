@@ -7,7 +7,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import com.elivoa.aliprint.entity.AliResult;
+import com.elivoa.aliprint.entity.AliOldResult;
 import com.google.common.collect.Lists;
 
 public class APIResponse {
@@ -28,8 +28,8 @@ public class APIResponse {
 		}
 	}
 
-	public AliResult toOrderList() {
-		return new AliResult(this);
+	public AliOldResult toOrderList() {
+		return new AliOldResult(this);
 	}
 
 	public APIResponse getResp(String key) {
@@ -82,11 +82,16 @@ public class APIResponse {
 	}
 
 	public int getInt(String key) {
+		Integer i = getInteger(key);
+		return null == i ? 0 : i;
+	}
+
+	public Integer getInteger(String key) {
 		Object obj = this.data.get(key);
 		if (null != obj && obj instanceof Integer) {
 			return (Integer) obj;
 		}
-		return 0;
+		return null;
 	}
 
 	public boolean getBoolean(String key) {
@@ -137,16 +142,29 @@ public class APIResponse {
 	}
 
 	private static SimpleDateFormat orderTimeFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+	private static SimpleDateFormat newTimeFormat = new SimpleDateFormat("yyyyMMddhhmmssSSSZZZZ");
 
 	public Timestamp parseTime(String key) {
 		String timestring = this.getString(key);
+		if (null == timestring) {
+			return null;
+		}
 		try {
 			Date date = orderTimeFormat.parse(timestring);
 			if (null != date) {
 				return new Timestamp(date.getTime());
 			}
 		} catch (ParseException e) {
-			e.printStackTrace();
+			// second round
+			try {
+				Date date = newTimeFormat.parse(timestring);
+				if (null != date) {
+					return new Timestamp(date.getTime());
+				}
+			} catch (ParseException ex) {
+				// second round
+				ex.printStackTrace();
+			}
 		}
 		return null;
 	}

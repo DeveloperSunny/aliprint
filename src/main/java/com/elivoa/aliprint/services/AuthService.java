@@ -1,11 +1,13 @@
 package com.elivoa.aliprint.services;
 
 import java.util.List;
+import java.util.Map;
 
 import com.alibaba.openapi.client.AlibabaClient;
 import com.elivoa.aliprint.alisdk.AliToken;
 import com.elivoa.aliprint.data.OrderStatus;
 import com.elivoa.aliprint.data.Params;
+import com.elivoa.aliprint.entity.AliOldResult;
 import com.elivoa.aliprint.entity.AliOrder;
 import com.elivoa.aliprint.entity.AliProduct;
 import com.elivoa.aliprint.entity.AliResult;
@@ -41,13 +43,17 @@ public interface AuthService {
 
 	Object getAccountInfo(AliToken token, String memberId);
 
-	String[] changeToMemberId(AliToken token, String... loginIds);
+	// switch between ids.
 
-	String[] changeToMemberId(AliToken token, List<String> loginIds);
+	String changeToMemberId(String loginId);
+
+	Map<String, String> changeToMemberIds(String... loginIds);
+
+	Map<String, String> changeToMemberIds(List<String> loginIds);
 
 	// list order
 	AliResult<AliOrder> listOrders(AliToken token, OrderStatus status, int pagesize, int page, Params params);
 
-	AliResult<AliProduct> listProducts(AliToken token, int pagesize, int page, Params params);
+	AliOldResult<AliProduct> listProducts(AliToken token, int pagesize, int page, Params params);
 
 }

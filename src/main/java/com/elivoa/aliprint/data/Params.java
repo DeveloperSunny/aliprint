@@ -17,6 +17,13 @@ public class Params {
 		return new Params(key, value);
 	}
 
+	public static Params init(Params params) {
+		if (null == params) {
+			params = Params.create();
+		}
+		return params;
+	}
+
 	public Params() {
 		this.params = Maps.newHashMap();
 	}
@@ -49,4 +56,5 @@ public class Params {
 	public Map<String, Object> params() {
 		return params;
 	}
+
 }

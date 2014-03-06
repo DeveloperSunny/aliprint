@@ -11,6 +11,9 @@ public class AliToken {
 	private Timestamp updateTime;
 	private Timestamp createTime;
 
+	// aliMemberId;
+	private String memberId;
+
 	// methods
 
 	public boolean isAccessTokenAvailable() {
@@ -41,12 +44,21 @@ public class AliToken {
 		return this.getToken().getAliId();
 	}
 
-	public String getMemberId() {
-		Long aliid = this.getAliid();
-		if (null == aliid) {
-			return "";
+	public String getLoginId() {
+		if (null == this.token) {
+			return null;
 		}
-		return String.format("b2b-%s", aliid);
+		String loginId = this.getToken().getResource_owner();
+		return loginId;
+	}
+
+	public void updateAll(AliToken savedToken) {
+		if (null == savedToken) {
+			return;
+		}
+		this.setCreateTime(savedToken.getCreateTime());
+		this.setUpdateTime(savedToken.getUpdateTime());
+		this.setToken(savedToken.getToken());
 	}
 
 	// accessors
@@ -75,13 +87,12 @@ public class AliToken {
 		this.createTime = createTime;
 	}
 
-	public void updateAll(AliToken savedToken) {
-		if (null == savedToken) {
-			return;
-		}
-		this.setCreateTime(savedToken.getCreateTime());
-		this.setUpdateTime(savedToken.getUpdateTime());
-		this.setToken(savedToken.getToken());
+	public String getMemberId() {
+		return this.memberId;
+	}
+
+	public void setMemberId(String memberId) {
+		this.memberId = memberId;
 	}
 
 }

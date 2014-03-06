@@ -1,5 +1,8 @@
 eclipse.preferences.version=1
-encoding//src/main/java/com/elivoa/aliprint/components/order/OrderList.tml=UTF-8
-encoding//src/main/java/com/elivoa/aliprint/components/product/ProductList.tml=UTF-8
-encoding//src/main/java/com/elivoa/aliprint/pages/Index.tml=UTF-8
+encoding//src/main/ui/com/elivoa/aliprint/components/Header.tml=UTF-8
+encoding//src/main/ui/com/elivoa/aliprint/components/Layout.tml=UTF-8
+encoding//src/main/ui/com/elivoa/aliprint/components/LeftNav.tml=UTF-8
+encoding//src/main/ui/com/elivoa/aliprint/components/order/OrderList.tml=UTF-8
+encoding//src/main/ui/com/elivoa/aliprint/components/product/ProductList.tml=UTF-8
+encoding//src/main/ui/com/elivoa/aliprint/pages/Index.tml=UTF-8
 encoding/<project>=UTF-8

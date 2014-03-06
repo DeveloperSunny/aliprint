@@ -7,7 +7,7 @@ import org.apache.tapestry5.ioc.annotations.Inject;
 
 import com.elivoa.aliprint.alisdk.AliToken;
 import com.elivoa.aliprint.entity.AliProduct;
-import com.elivoa.aliprint.entity.AliResult;
+import com.elivoa.aliprint.entity.AliOldResult;
 import com.elivoa.aliprint.services.AuthService;
 
 public class ProductList {
@@ -16,7 +16,7 @@ public class ProductList {
 	Integer sss;
 
 	@Property
-	AliResult<AliProduct> products;
+	AliOldResult<AliProduct> products;
 
 	@Property
 	AliProduct _product;

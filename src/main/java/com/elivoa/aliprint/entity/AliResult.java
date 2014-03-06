@@ -7,53 +7,35 @@ import com.google.common.collect.Lists;
 
 public class AliResult<T> {
 
-	private boolean success;
-
+	private int realPrePageSize;
+	private String lastStartRow;
 	private int total;
 
-	private List<T> returns;
+	private List<T> models;
 
 	public AliResult() {
 		// empty constructor
 	}
 
 	public AliResult(APIResponse resp) {
-		APIResponse result = resp.getResp("result");
-		// parse basic values;
-		if (null != result) {
-			this.success = result.getBoolean("success");
-			this.total = result.getInt("total");
-		}
 	}
 
 	public static AliResult<AliOrder> newOrderListResult(APIResponse resp) {
+		System.out.println("===========================================================");
+		System.out.println(resp.data);
 		AliResult<AliOrder> result = new AliResult<AliOrder>(resp); // for basic;
-		APIResponse resultNode = resp.getResp("result");
+		APIResponse list = resp.getResp("orderListResult");
 		// parse basic values;
 		if (null != result) {
-			List<APIResponse> orderList = resultNode.getRespList("toReturn");
-			if (null != orderList) {
-				result.returns = Lists.newArrayList();
-				for (APIResponse raworder : orderList) {
+			result.total = list.getInt("totalCount");
+			result.realPrePageSize = list.getInt("realPrePageSize");
+			result.lastStartRow = list.getString("lastStartRow");
+			List<APIResponse> modelList = list.getRespList("modelList");
+			if (null != modelList) {
+				result.models = Lists.newArrayList();
+				for (APIResponse raworder : modelList) {
 					AliOrder order = new AliOrder(raworder);
-					result.returns.add(order);
-				}
-			}
-		}
-		return result;
-	}
-
-	public static AliResult<AliProduct> newProductListResult(APIResponse resp) {
-		AliResult<AliProduct> result = new AliResult<AliProduct>(resp);
-		APIResponse resultNode = resp.getResp("result");
-		// parse basic values;
-		if (null != result) {
-			List<APIResponse> orderList = resultNode.getRespList("toReturn");
-			if (null != orderList) {
-				result.returns = Lists.newArrayList();
-				for (APIResponse raworder : orderList) {
-					AliProduct product = new AliProduct(raworder);
-					result.returns.add(product);
+					result.models.add(order);
 				}
 			}
 		}
@@ -61,14 +43,6 @@ public class AliResult<T> {
 	}
 
 	// accessors
-
-	public boolean isSuccess() {
-		return success;
-	}
-
-	public void setSuccess(boolean success) {
-		this.success = success;
-	}
 
 	public int getTotal() {
 		return total;
@@ -78,12 +52,28 @@ public class AliResult<T> {
 		this.total = total;
 	}
 
-	public List<T> getReturns() {
-		return returns;
+	public List<T> getModels() {
+		return models;
 	}
 
-	public void setReturns(List<T> returns) {
-		this.returns = returns;
+	public void setModels(List<T> models) {
+		this.models = models;
+	}
+
+	public int getRealPrePageSize() {
+		return realPrePageSize;
+	}
+
+	public void setRealPrePageSize(int realPrePageSize) {
+		this.realPrePageSize = realPrePageSize;
+	}
+
+	public String getLastStartRow() {
+		return lastStartRow;
+	}
+
+	public void setLastStartRow(String lastStartRow) {
+		this.lastStartRow = lastStartRow;
 	}
 
 }

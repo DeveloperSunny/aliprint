@@ -9,6 +9,7 @@
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/base"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/func"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/tapestry-component"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/ui"/>
         <property name="context-root" value="aliprint"/>
         <property name="java-output-path" value="/aliprint/target/classes"/>
     </wb-module>

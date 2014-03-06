@@ -1,0 +1,8 @@
+<html xmlns:t="http://tapestry.apache.org/schema/tapestry_5_3.xsd">
+<t:content>
+	<ul class="Lm-list">
+		<li class="cur"><a href="#">快递单打印</a></li>
+		<li><a href="#">账号设置</a></li>
+	</ul>
+</t:content>
+</html>

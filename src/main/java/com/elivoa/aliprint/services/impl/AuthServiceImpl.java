@@ -2,6 +2,7 @@ package com.elivoa.aliprint.services.impl;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -12,13 +13,13 @@ import com.alibaba.openapi.client.AlibabaClient;
 import com.alibaba.openapi.client.Request;
 import com.alibaba.openapi.client.auth.AuthorizationToken;
 import com.alibaba.openapi.client.policy.ClientPolicy;
-import com.alibaba.openapi.client.policy.RequestPolicy;
 import com.elivoa.aliprint.alisdk.AliSDK;
 import com.elivoa.aliprint.alisdk.AliToken;
 import com.elivoa.aliprint.dal.TokenDao;
 import com.elivoa.aliprint.data.APIResponse;
 import com.elivoa.aliprint.data.OrderStatus;
 import com.elivoa.aliprint.data.Params;
+import com.elivoa.aliprint.entity.AliOldResult;
 import com.elivoa.aliprint.entity.AliOrder;
 import com.elivoa.aliprint.entity.AliProduct;
 import com.elivoa.aliprint.entity.AliResult;
@@ -57,6 +58,13 @@ public class AuthServiceImpl implements AuthService {
 	public AlibabaClient client() {
 		return this.client;
 	}
+
+	// services
+
+	@Inject
+	TokenDao tokenDao;
+
+	// constructures
 
 	public AuthServiceImpl(
 			//
@@ -182,30 +190,45 @@ public class AuthServiceImpl implements AuthService {
 
 	}
 
-	// services
+	// get cached memberId;
+	public String getMemberId(AliToken token) {
+		if (null != token) {
+			if (token.getMemberId() == null) {
+				String memberId = changeToMemberId(token.getLoginId());
+				token.setMemberId(memberId);
+				// TODO save member id to database;
+			}
+		}
+		return token.getMemberId();
+	}
 
-	@Inject
-	TokenDao tokenDao;
+	// change to MemberId by LoginId / (ResourceOwner in AuthorizationToken)
+	public String changeToMemberId(String loginId) {
+		Map<String, String> map = changeToMemberIds(loginId);
+		if (null != map) {
+			return map.get(loginId);
+		}
+		return null;
+	}
 
-	@Override
-	public String[] changeToMemberId(AliToken token, String... loginIds) {
+	public Map<String, String> changeToMemberIds(String... loginIds) {
 		List<String> loginIdList = Lists.newArrayList();
 		for (String loginId : loginIds) {
 			loginIdList.add(loginId);
 		}
-		return changeToMemberId(token, loginIdList);
+		return changeToMemberIds(loginIdList);
 	}
 
-	// TODO not finished, buggy
-	@Override
-	public String[] changeToMemberId(AliToken token, List<String> loginIds) {
-		RequestPolicy policy = AliSDK.authPolicy().setNeedAuthorization(true).setUseSignture(true);
+	@SuppressWarnings("unchecked")
+	public Map<String, String> changeToMemberIds(List<String> loginIds) {
 		Request apiRequest = new Request("cn.alibaba.open", "convertMemberIdsByLoginIds", 1);
 		apiRequest.setParam("loginIds", loginIds);
-		apiRequest.setAccessToken(token.accessToken());
-		Object result = null;
+		// apiRequest.setAccessToken(token.accessToken());
 		try {
-			result = client.send(apiRequest, null, policy);
+			Object result = client.send(apiRequest, null, AliSDK.noAuthPolicy());
+			if (null != result && result instanceof Map) {
+				return (Map<String, String>) result;
+			}
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		} catch (ExecutionException e) {
@@ -213,31 +236,26 @@ public class AuthServiceImpl implements AuthService {
 		} catch (TimeoutException e) {
 			e.printStackTrace();
 		}
-		System.out.println(result);
 		return null;
 	}
 
-	// list orders.
+	// list orders
+	// TODO 买家id和卖家id必须填一个。
 	public AliResult<AliOrder> listOrders(AliToken token, OrderStatus status, int pagesize, int page, Params params) {
+		// 1. get member ID, this api is cached. TODO supply an api that force refresh memberID if
+		// anything is wrong;
 
-		// 需要传递的参数，如复杂结构，则需要传递合法的json串，如["1","2"],{"key":"value"}
+		Request req = new Request("cn.alibaba.open", "trade.order.list.get", 2);
+		params = Params.init(params);
 
-		// new version get order list.
-		// Request req = new Request("cn.alibaba.open", "trade.order.list.get", 2);
-
-		// old version of get order list.
-		Request req = new Request("cn.alibaba.open", "trade.order.orderList.get", 1);
-		req.setParam("sellerMemberId", token.getMemberId());
-
-		// Request req = new Request("cn.alibaba.open", "trade.order.detail.get", 1);
-		// req.setParam("id", "534199203182309");
-		// 需要传递的参数，如复杂结构，则需要传递合法的json串，如["1","2"],{"key":"value"}
+		String memberId = this.getMemberId(token);
+		params.add("sellerMemberId", memberId);
 
 		if (null != status) {
-			req.setParam("orderStatus", status.toString());
+			params.add("orderStatusEnum", status.toString());
 		}
-		req.setParam("pageSize", pagesize);
-		req.setParam("pageNO", page);
+		params.add("pageSize", pagesize); // 33333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333
+		params.add("page", page);
 		Params.injectParameters(req, params);
 
 		// 返回的结果一般是合法的json串，用户需要自己处理
@@ -255,7 +273,7 @@ public class AuthServiceImpl implements AuthService {
 		return null;
 	}
 
-	public AliResult<AliProduct> listProducts(AliToken token, int pagesize, int page, Params params) {
+	public AliOldResult<AliProduct> listProducts(AliToken token, int pagesize, int page, Params params) {
 		Request req = new Request("cn.alibaba.open", "offer.getAllOfferList", 1);
 		req.setParam("sellerMemberId", token.getMemberId());
 		req.setParam("type", "SALE");
@@ -274,7 +292,7 @@ public class AuthServiceImpl implements AuthService {
 			req.setAccessToken(token.accessToken());
 			APIResponse resp = APIResponse.warp(client.send(req, null, AliSDK.authPolicy()));
 			System.out.println(resp.data);
-			return AliResult.newProductListResult(resp);
+			return AliOldResult.newProductListResult(resp);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		} catch (ExecutionException e) {

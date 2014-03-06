@@ -14,7 +14,7 @@ import com.elivoa.aliprint.services.AuthService;
 public class OrderList {
 
 	@Property
-	AliResult orders;
+	AliResult<AliOrder> orders;
 
 	// loop temp variables;
 	@Property
@@ -31,15 +31,39 @@ public class OrderList {
 
 	Object setupRender() {
 		token.getMemberId();
-		orders = sdk.listOrders(token, OrderStatus.waitbuyerpay, 20, 1, null);
+		orders = sdk.listOrders(token, OrderStatus.WAIT_BUYER_PAY, 20, 1, null);
 		if (orders == null) {
 			return false;
 		}
 		return true;
 	}
 
+	public boolean getIsFirstEntity() {
+		return null != this._index && this._index == 0;
+	}
+
 	public String getSpecValue() {
 		return this._entity.getSpecInfo().get(_specName);
+	}
+
+	public String getEntityQuantityHTML() {
+		if (null != _entity) {
+			Double q = _entity.getQuantity();
+			if (q <= 1.0) {
+				return String.valueOf(q.intValue());
+			} else {
+				return String.format("<span style='color:red'>%s</span>", String.valueOf(q.intValue()));
+			}
+		}
+		return "[ERROR]";
+	}
+
+	public boolean getIsSend() {
+		if (this._entity.getEntryStatus().equalsIgnoreCase(OrderStatus.WAIT_BUYER_RECEIVE.toString())
+				|| this._entity.getEntryStatus().equalsIgnoreCase(OrderStatus.SUCCESS.toString())) {
+			return true;
+		}
+		return false;
 	}
 
 	@Inject

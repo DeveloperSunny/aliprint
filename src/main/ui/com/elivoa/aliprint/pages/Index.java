@@ -47,13 +47,7 @@ public class Index {
 	}
 
 	Object setupRender() {
-		// URL url = null;
-		// try {
-		// url = new URL("http://www.google.com");
-		// } catch (MalformedURLException e) {
-		// e.printStackTrace();
-		// }
-		// return url;
+		System.out.println("===================================================");
 		return true;
 	}
 

@@ -18,26 +18,17 @@ Description: A Web 2.0 design with fluid width suitable for blogs and small webs
 <title>${title}</title>
 </head>
 <body>
-	<!-- start header -->
-	<div class="header">
-		<div class="logo">
-			<h1>
-				<t:pagelink page="index">${message:logo}</t:pagelink>
-				&nbsp; version ${appVersion}
-			</h1>
-		</div>
-		<div class="menu">
-			<ul>
-				<li t:type="loop" source="pageNames" value="pageName"
-					class="prop:classForPageName"><t:pagelink page="prop:pageName">${pageName}</t:pagelink>
-				</li>
-			</ul>
-		</div>
+
+	<div class="F-header">
+		<t:header />
 	</div>
-	<!-- end header -->
-	<!-- start page -->
-	<div class="page">
-		<!-- start sidebar -->
+	<div class="F-leftmenu">
+		<t:leftNav />
+	</div>
+
+	<div class="F-mainbox">
+		<t:body />
+
 		<div class="sidebar">
 			<ul>
 				<li class="search" style="background: none;"></li>
@@ -53,22 +44,9 @@ Description: A Web 2.0 design with fluid width suitable for blogs and small webs
 				</li>
 			</ul>
 		</div>
-		<!-- end sidebar -->
-		<!-- start content -->
-		<div class="content">
-			<div class="post">
-				<div class="title">
-					<h2>${title}</h2>
-				</div>
-				<div class="entry">
-					<t:body />
-				</div>
-			</div>
-		</div>
-		<!-- end content -->
-		<br style="clear: both;" />
+
 	</div>
-	<!-- end page -->
+
 	<!-- start footer -->
 	<div class="footer">
 		<p class="legal">
