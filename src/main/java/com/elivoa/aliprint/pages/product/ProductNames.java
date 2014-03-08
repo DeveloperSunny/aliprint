@@ -41,10 +41,7 @@ public class ProductNames {
 
 	Object onActivate(int start, int itemsPerPage) throws MalformedURLException {
 		this.start = start;
-		this.itemsPerPage = itemsPerPage;
-		if (this.itemsPerPage <= 0) {
-			this.itemsPerPage = 20;
-		}
+		this.itemsPerPage = itemsPerPage <= 0 ? defaultItemsPerPage : itemsPerPage;
 
 		// authenticate process.
 		try {
@@ -110,4 +107,7 @@ public class ProductNames {
 	@Symbol(SymbolConstants.TAPESTRY_VERSION)
 	private String tapestryVersion;
 
+	@Inject
+	@Symbol("pagesize.product.alias")
+	int defaultItemsPerPage;
 }

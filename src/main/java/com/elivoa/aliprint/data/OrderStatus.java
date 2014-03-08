@@ -1,5 +1,9 @@
 package com.elivoa.aliprint.data;
 
+import java.util.Map;
+
+import com.beust.jcommander.internal.Maps;
+
 /**
  * <code>// old version 
 waitbuyerpay, // (等待买家付款)
@@ -29,5 +33,20 @@ public enum OrderStatus {
 	// 担保交易共有5个状态：
 
 	// new version;
-	SUCCESS, CANCEL, WAIT_BUYER_PAY, WAIT_SELLER_SEND, WAIT_BUYER_RECEIVE
+	SUCCESS, CANCEL, WAIT_BUYER_PAY, WAIT_SELLER_SEND, WAIT_BUYER_RECEIVE;
+
+	private static Map<OrderStatus, String> toOldStringMap;
+	static {
+		toOldStringMap = Maps.newHashMap();
+		toOldStringMap.put(SUCCESS, "success");
+		toOldStringMap.put(CANCEL, "cancel");
+		toOldStringMap.put(WAIT_BUYER_PAY, "waitbuyerpay");
+		toOldStringMap.put(WAIT_SELLER_SEND, "waitsellersend");
+		toOldStringMap.put(WAIT_BUYER_RECEIVE, "waitbuyerreceive");
+	}
+
+	public String toOldStatusString() {
+		return toOldStringMap.get(this);
+	}
+
 }

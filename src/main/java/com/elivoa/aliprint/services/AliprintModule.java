@@ -8,6 +8,7 @@ import org.apache.tapestry5.ioc.ServiceBinder;
 import org.apache.tapestry5.ioc.annotations.SubModule;
 
 import com.alibaba.openapi.client.policy.ClientPolicy;
+import com.elivoa.aliprint.dal.ProductDao;
 import com.elivoa.aliprint.dal.TokenDao;
 import com.elivoa.aliprint.module.BaseModule;
 import com.elivoa.aliprint.module.InfrastractureModule;
@@ -54,6 +55,8 @@ public class AliprintModule {
 		configuration.add("com.elivoa.aliprint.appkey", "1010132");
 		configuration.add("com.elivoa.aliprint.securitykey", "SGUd5dc6Dj2f");
 
+		configuration.add("pagesize.product.alias", "10");
+
 		// configuration.add(SymbolConstants.GZIP_COMPRESSION_ENABLED, "false");
 
 		//
@@ -99,6 +102,8 @@ public class AliprintModule {
 		binder.bind(ClientPolicy.class);
 
 		binder.bind(TokenDao.class);
+		binder.bind(ProductDao.class);
+
 		// binder.bind(QuerySuggestion.class);
 		// binder.bind(QuerySuggestionBuild.class);
 

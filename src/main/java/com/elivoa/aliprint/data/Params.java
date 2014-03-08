@@ -38,6 +38,10 @@ public class Params {
 		return this;
 	}
 
+	public Boolean getBoolean(String key) {
+		return (Boolean) this.params.get(key);
+	}
+
 	public static void injectParameters(Request req, Params params) {
 		if (null != params) {
 			params.injectParameters(req);

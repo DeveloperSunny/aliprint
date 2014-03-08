@@ -6,6 +6,7 @@ import org.apache.tapestry5.ioc.annotations.Inject;
 
 import com.elivoa.aliprint.alisdk.AliToken;
 import com.elivoa.aliprint.data.OrderStatus;
+import com.elivoa.aliprint.data.Params;
 import com.elivoa.aliprint.entity.AliOrder;
 import com.elivoa.aliprint.entity.AliOrderEntity;
 import com.elivoa.aliprint.entity.AliResult;
@@ -31,7 +32,9 @@ public class OrderList {
 
 	Object setupRender() {
 		token.getMemberId();
-		orders = sdk.listOrders(token, OrderStatus.WAIT_BUYER_PAY, 20, 1, null);
+
+		Params params = Params.create("withAlias", true);
+		orders = sdk.listOrders(token, OrderStatus.WAIT_BUYER_PAY, 10, 1, params, true, true);
 		if (orders == null) {
 			return false;
 		}

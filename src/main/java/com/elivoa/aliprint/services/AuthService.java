@@ -7,6 +7,7 @@ import com.alibaba.openapi.client.AlibabaClient;
 import com.elivoa.aliprint.alisdk.AliToken;
 import com.elivoa.aliprint.data.OrderStatus;
 import com.elivoa.aliprint.data.Params;
+import com.elivoa.aliprint.entity.AliOldOrder;
 import com.elivoa.aliprint.entity.AliOldResult;
 import com.elivoa.aliprint.entity.AliOrder;
 import com.elivoa.aliprint.entity.AliProduct;
@@ -52,7 +53,12 @@ public interface AuthService {
 	Map<String, String> changeToMemberIds(List<String> loginIds);
 
 	// list order
-	AliResult<AliOrder> listOrders(AliToken token, OrderStatus status, int pagesize, int page, Params params);
+	AliResult<AliOrder> listOrders(AliToken token, OrderStatus status, int pagesize, int page, Params params,
+			boolean withPrivateAddress, boolean withRightMemo);
+
+	AliOrder getOrder(AliToken token, long orderId, Params params);
+
+	AliOldResult<AliOldOrder> oldListOrders(AliToken token, OrderStatus status, int pagesize, int page, Params params);
 
 	AliOldResult<AliProduct> listProducts(AliToken token, int pagesize, int page, Params params);
 

@@ -21,8 +21,8 @@ public class AliResult<T> {
 	}
 
 	public static AliResult<AliOrder> newOrderListResult(APIResponse resp) {
-		System.out.println("===========================================================");
-		System.out.println(resp.data);
+		// System.out.println("===========================================================");
+		// System.out.println(resp.data);
 		AliResult<AliOrder> result = new AliResult<AliOrder>(resp); // for basic;
 		APIResponse list = resp.getResp("orderListResult");
 		// parse basic values;

@@ -11,6 +11,9 @@ public class AliProduct {
 	private String offerStatus;// =outdated,
 	private double productUnitWeight;// =0.6,
 
+	// additional fields;
+	private String alias;
+
 	public AliProduct(APIResponse resp) {
 
 		this.offerId = resp.getLong("offerId");
@@ -68,6 +71,14 @@ public class AliProduct {
 
 	public void setQualityLevel(int qualityLevel) {
 		this.qualityLevel = qualityLevel;
+	}
+
+	public String getAlias() {
+		return alias;
+	}
+
+	public void setAlias(String alias) {
+		this.alias = alias;
 	}
 
 }

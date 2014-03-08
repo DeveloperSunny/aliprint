@@ -1,11 +1,8 @@
 package com.elivoa.aliprint.entity;
 
 import java.sql.Timestamp;
-import java.util.List;
 import java.util.Map;
 
-import com.beust.jcommander.internal.Lists;
-import com.beust.jcommander.internal.Maps;
 import com.elivoa.aliprint.data.APIResponse;
 
 /**
@@ -119,6 +116,9 @@ public class AliOrderEntity {
 	private String currencyCode;// =CNY,
 	private int buyerRateStatus;// =5,
 
+	// extra values;
+	private String alias;
+
 	// complaintStatus;// ={
 	// valid=true,
 	// refundComplaintDoing=false,
@@ -177,7 +177,7 @@ public class AliOrderEntity {
 		this.productPic = resp.getString("productPic");
 		this.gmtModified = resp.parseTime("gmtModified");
 		this.gmtCreate = resp.parseTime("gmtCreate");
-		
+
 		this.entryPayStatus = resp.getInt("entryPayStatus");
 		this.entryStatusStr = resp.getString("entryStatusStr");
 		this.codStatus = resp.getInt("codStatus");
@@ -197,17 +197,6 @@ public class AliOrderEntity {
 		this.promotionsFee = resp.getInt("promotionsFee");
 		this.currencyCode = resp.getString("currencyCode");
 		this.buyerRateStatus = resp.getInt("buyerRateStatus");
-
-		// this.sourceId = resp.getInt("sourceId");
-		// this.specId = resp.getString("specId");// =e4128fe39c985061f6ba876756ff4138;
-		//
-		// this.productName = resp.getString("productName");
-		// this.price = resp.getInt("price");
-		// this.entryDiscount = resp.getInt("entryDiscount");
-		// this.quantity = resp.getInt("quantity");
-		//
-		// this.entryStatus = resp.getString("entryStatus");
-		// this.entryCodStatus = resp.getInt("entryCodStatus");
 
 		//
 		// private String[] productPic;//
@@ -232,6 +221,17 @@ public class AliOrderEntity {
 		// }
 
 	}
+
+	// methods
+	public String getShortName() {
+		if (null != this.alias && this.alias.trim().length() > 0) {
+			return this.alias;
+		} else {
+			return this.productName;
+		}
+	}
+
+	// accessors
 
 	public void setSourceId(int sourceId) {
 		this.sourceId = sourceId;
@@ -543,6 +543,14 @@ public class AliOrderEntity {
 
 	public void setBuyerRateStatus(int buyerRateStatus) {
 		this.buyerRateStatus = buyerRateStatus;
+	}
+
+	public String getAlias() {
+		return alias;
+	}
+
+	public void setAlias(String alias) {
+		this.alias = alias;
 	}
 
 }

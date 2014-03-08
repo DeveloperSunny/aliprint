@@ -22,7 +22,10 @@
 						<tr>
 							<td>${product.offerId}</td>
 							<td>${product.subject}</td>
-							<td><input type="text" value="别名" /></td>
+							<td><div class="A-alias">
+									<input type="text" class="alias" value="${product.alias}" productId="${product.offerId}" /><a
+										class="button" href="javascript:void(0);"></a>
+								</div></td>
 							<td>${product.qualityLevel}</td>
 							<td>${product.productUnitWeight}</td>
 							<td>${product.offerStatus}</td>

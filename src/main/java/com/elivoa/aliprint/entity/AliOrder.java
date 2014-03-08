@@ -31,6 +31,8 @@ public class AliOrder {
 	private String closeReason; // 关闭原因
 	private String buyerFeedback; // 买家留言
 
+	private String toFullName;// ** can't be fetch form new version of API because of privacy.
+	private String toMobile;// ** same to above
 	private String toPost; // 收货人邮编
 	private String toArea; // 收货人地址
 
@@ -70,10 +72,11 @@ public class AliOrder {
 
 	private List<AliOrderEntity> entities; // 订单明细
 
-	// private OrderMemoModel buyerOrderMemo; // 买家备注
-	// private OrderMemoModel sellerOrderMemo; // 卖家备注
+	private AliOrderMemo buyerOrderMemo; // 买家备注
+	private AliOrderMemo sellerOrderMemo; // 卖家备注
+	private AliOrderMemo[] orderMemoList; // 备注列表
+
 	// private LogisticsOrderModel[] logisticsOrderList; // 物流单列表
-	// private OrderMemoModel[] orderMemoList; // 备注列表
 	// private OrderInvoiceModel orderInvoiceModel; // 发票信息
 
 	public AliOrder(APIResponse resp) {
@@ -138,18 +141,23 @@ public class AliOrder {
 			}
 		}
 
+		// memos;
+		this.buyerOrderMemo = AliOrderMemo.create(resp.getResp("buyerOrderMemo"));
+		this.sellerOrderMemo = AliOrderMemo.create(resp.getResp("sellerOrderMemo"));
+
+		List<APIResponse> respList = resp.getRespList("orderMemoList");
+		// OrderMemoModel[] orderMemoList =resp.getOrderMemoModel[]("orderMemoList");
+
+		// if (this.buyerOrderMemo != null || this.sellerOrderMemo != null || respList != null) {
+		// System.out.println("not null");
+		// }
+
 		// TODO parse them.
 
 		// List stepOrderList =resp.getList("stepOrderList");
 		// LogisticsOrderModel[] logisticsOrderList
 		// =resp.getLogisticsOrderModel[]("logisticsOrderList");
-		// OrderMemoModel[] orderMemoList =resp.getOrderMemoModel[]("orderMemoList");
 		// OrderInvoiceModel orderInvoiceModel =resp.getOrderInvoiceModel("orderInvoiceModel");
-		// OrderMemoModel buyerOrderMemo =resp.getOrderMemoModel("buyerOrderMemo");
-		// OrderMemoModel sellerOrderMemo =resp.getOrderMemoModel("sellerOrderMemo");
-		// order entities;
-
-		// private List<AliOrderEntity> orderEntities;
 	}
 
 	// methods
@@ -617,6 +625,46 @@ public class AliOrder {
 
 	public void setEntities(List<AliOrderEntity> entities) {
 		this.entities = entities;
+	}
+
+	public AliOrderMemo getBuyerOrderMemo() {
+		return buyerOrderMemo;
+	}
+
+	public void setBuyerOrderMemo(AliOrderMemo buyerOrderMemo) {
+		this.buyerOrderMemo = buyerOrderMemo;
+	}
+
+	public AliOrderMemo getSellerOrderMemo() {
+		return sellerOrderMemo;
+	}
+
+	public void setSellerOrderMemo(AliOrderMemo sellerOrderMemo) {
+		this.sellerOrderMemo = sellerOrderMemo;
+	}
+
+	public AliOrderMemo[] getOrderMemoList() {
+		return orderMemoList;
+	}
+
+	public void setOrderMemoList(AliOrderMemo[] orderMemoList) {
+		this.orderMemoList = orderMemoList;
+	}
+
+	public String getToFullName() {
+		return toFullName;
+	}
+
+	public void setToFullName(String toFullName) {
+		this.toFullName = toFullName;
+	}
+
+	public String getToMobile() {
+		return toMobile;
+	}
+
+	public void setToMobile(String toMobile) {
+		this.toMobile = toMobile;
 	}
 
 }

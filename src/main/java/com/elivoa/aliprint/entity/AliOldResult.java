@@ -5,6 +5,11 @@ import java.util.List;
 import com.elivoa.aliprint.data.APIResponse;
 import com.google.common.collect.Lists;
 
+/**
+ * 旧版
+ * 
+ * @param <T>
+ */
 public class AliOldResult<T> {
 
 	private boolean success;
@@ -37,6 +42,23 @@ public class AliOldResult<T> {
 				for (APIResponse raworder : orderList) {
 					AliProduct product = new AliProduct(raworder);
 					result.returns.add(product);
+				}
+			}
+		}
+		return result;
+	}
+
+	public static AliOldResult<AliOldOrder> newOrderListResult(APIResponse resp) {
+		AliOldResult<AliOldOrder> result = new AliOldResult<AliOldOrder>(resp); // for basic;
+		APIResponse resultNode = resp.getResp("result");
+		// parse basic values;
+		if (null != result) {
+			List<APIResponse> orderList = resultNode.getRespList("toReturn");
+			if (null != orderList) {
+				result.returns = Lists.newArrayList();
+				for (APIResponse raworder : orderList) {
+					AliOldOrder order = new AliOldOrder(raworder);
+					result.returns.add(order);
 				}
 			}
 		}

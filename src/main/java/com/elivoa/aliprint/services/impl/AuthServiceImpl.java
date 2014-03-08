@@ -13,16 +13,21 @@ import com.alibaba.openapi.client.AlibabaClient;
 import com.alibaba.openapi.client.Request;
 import com.alibaba.openapi.client.auth.AuthorizationToken;
 import com.alibaba.openapi.client.policy.ClientPolicy;
+import com.beust.jcommander.internal.Maps;
 import com.elivoa.aliprint.alisdk.AliSDK;
 import com.elivoa.aliprint.alisdk.AliToken;
+import com.elivoa.aliprint.dal.ProductDao;
 import com.elivoa.aliprint.dal.TokenDao;
 import com.elivoa.aliprint.data.APIResponse;
 import com.elivoa.aliprint.data.OrderStatus;
 import com.elivoa.aliprint.data.Params;
+import com.elivoa.aliprint.entity.AliOldOrder;
 import com.elivoa.aliprint.entity.AliOldResult;
 import com.elivoa.aliprint.entity.AliOrder;
+import com.elivoa.aliprint.entity.AliOrderEntity;
 import com.elivoa.aliprint.entity.AliProduct;
 import com.elivoa.aliprint.entity.AliResult;
+import com.elivoa.aliprint.entity.ProductAlias;
 import com.elivoa.aliprint.exceptions.NeedAuthenticationException;
 import com.elivoa.aliprint.services.AuthService;
 import com.google.common.collect.Lists;
@@ -63,6 +68,9 @@ public class AuthServiceImpl implements AuthService {
 
 	@Inject
 	TokenDao tokenDao;
+
+	@Inject
+	ProductDao productDao;
 
 	// constructures
 
@@ -171,7 +179,6 @@ public class AuthServiceImpl implements AuthService {
 	// get date API
 
 	public Object getAccountInfo(AliToken token, String memberId) {
-
 		Request apiRequest = new Request("cn.alibaba.open", "member.get", 1);
 		apiRequest.setParam("memberId", memberId);
 		apiRequest.setAccessToken(token.accessToken());
@@ -185,9 +192,8 @@ public class AuthServiceImpl implements AuthService {
 		} catch (TimeoutException e) {
 			e.printStackTrace();
 		}
-		System.out.println(result);
+		// System.out.println(result);
 		return result;
-
 	}
 
 	// get cached memberId;
@@ -240,11 +246,8 @@ public class AuthServiceImpl implements AuthService {
 	}
 
 	// list orders
-	// TODO 买家id和卖家id必须填一个。
-	public AliResult<AliOrder> listOrders(AliToken token, OrderStatus status, int pagesize, int page, Params params) {
-		// 1. get member ID, this api is cached. TODO supply an api that force refresh memberID if
-		// anything is wrong;
-
+	public AliResult<AliOrder> listOrders(AliToken token, OrderStatus status, int pagesize, int page, Params params,
+			boolean withPrivateAddress, boolean withRightMemo) {
 		Request req = new Request("cn.alibaba.open", "trade.order.list.get", 2);
 		params = Params.init(params);
 
@@ -254,15 +257,141 @@ public class AuthServiceImpl implements AuthService {
 		if (null != status) {
 			params.add("orderStatusEnum", status.toString());
 		}
-		params.add("pageSize", pagesize); // 33333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333
+		params.add("pageSize", pagesize);
 		params.add("page", page);
 		Params.injectParameters(req, params);
 
-		// 返回的结果一般是合法的json串，用户需要自己处理
 		try {
 			req.setAccessToken(token.accessToken());
 			APIResponse resp = APIResponse.warp(client.send(req, null, AliSDK.authPolicy()));
-			return AliResult.newOrderListResult(resp);
+			AliResult<AliOrder> result = AliResult.newOrderListResult(resp);
+			if (null == result) {
+				return null;
+			}
+			// extra data;
+			if (withPrivateAddress) {
+				AliOldResult<AliOldOrder> oldListOrders = this.oldListOrders(token, status, pagesize, page, params);
+				// copy address info into the list.
+				copyAddressIntoNewList(result, oldListOrders);
+			}
+			if (withRightMemo) {
+				overrideOrderMemo(token, result);
+			}
+			if (params.getBoolean("withAlias")) {
+				// fill map with ids;
+				Map<Long, ProductAlias> map = Maps.newHashMap();
+				for (AliOrder order : result.getModels()) {
+					List<AliOrderEntity> entities = order.getEntities();
+					if (null != entities) {
+						for (AliOrderEntity entity : entities) {
+							map.put(entity.getSourceId(), null);
+						}
+					}
+				}
+
+				try {
+					List<ProductAlias> aliaslist = productDao.getProductAlias(map.keySet());
+					if (null != aliaslist) {
+						for (ProductAlias alias : aliaslist) {
+							map.put(alias.getId(), alias);
+						}
+					}
+					for (AliOrder order : result.getModels()) {
+						List<AliOrderEntity> entities = order.getEntities();
+						if (null != entities) {
+							for (AliOrderEntity entity : entities) {
+								ProductAlias alias = map.get(entity.getSourceId());
+								if (null != alias) {
+									entity.setAlias(alias.getAlias());
+								}
+							}
+						}
+					}
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+
+			}
+			return result;
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		} catch (TimeoutException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	private void overrideOrderMemo(AliToken token, AliResult<AliOrder> result) {
+		if (null != result) {
+			for (AliOrder order : result.getModels()) {
+				AliOrder newOrder = this.getOrder(token, order.getId(), Params.create("needOrderMemoList", true));
+				if (null != newOrder) {
+					order.setOrderMemoList(newOrder.getOrderMemoList());
+					order.setSellerOrderMemo(newOrder.getSellerOrderMemo());
+					order.setBuyerOrderMemo(newOrder.getBuyerOrderMemo());
+				}
+			}
+		}
+	}
+
+	private void copyAddressIntoNewList(AliResult<AliOrder> result, AliOldResult<AliOldOrder> oldResult) {
+		if (null != oldResult) {
+			for (AliOldOrder oldOrder : oldResult.getReturns()) {
+				for (AliOrder order : result.getModels()) {
+					// order id matches
+					if (oldOrder.getId() == order.getId()) {
+						order.setToFullName(oldOrder.getToFullName());
+						order.setToMobile(oldOrder.getToMobile());
+						order.setToArea(oldOrder.getToArea());
+						order.setToPost(oldOrder.getToPost());
+					}
+				}
+			}
+		}
+	}
+
+	public AliOrder getOrder(AliToken token, long orderId, Params params) {
+		Request req = new Request("cn.alibaba.open", "trade.order.detail.get", 1);
+		params = Params.init(params);
+		params.add("id", orderId);
+		Params.injectParameters(req, params);
+		// id Long 是 订单号
+		// needOrderEntries boolean 否 是否需要订单明细 true
+		// needInvoiceInfo boolean 否 是否需要发票信息 true
+		// needOrderMemoList boolean 否 是否需要订单备注 true
+		// needLogisticsOrderList boolean 否 是否需要物流单信息
+		try {
+			req.setAccessToken(token.accessToken());
+			APIResponse resp = APIResponse.warp(client.send(req, null, AliSDK.authPolicy()));
+			AliOrder order = new AliOrder(resp.getResp("orderModel"));
+			return order;
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		} catch (TimeoutException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public AliOldResult<AliOldOrder> oldListOrders(AliToken token, OrderStatus status, int pagesize, int page,
+			Params params) {
+		Request req = new Request("cn.alibaba.open", "trade.order.orderList.get", 1);
+		req.setParam("sellerMemberId", token.getMemberId());
+		if (null != status) {
+			req.setParam("orderStatus", status.toOldStatusString());
+		}
+		req.setParam("pageSize", pagesize);
+		req.setParam("pageNO", page);
+		Params.injectParameters(req, params);
+		try {
+			req.setAccessToken(token.accessToken());
+			APIResponse resp = APIResponse.warp(client.send(req, null, AliSDK.authPolicy()));
+			AliOldResult<AliOldOrder> result = AliOldResult.newOrderListResult(resp);
+			return result; // System.out.println(resp.data);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		} catch (ExecutionException e) {
@@ -277,6 +406,7 @@ public class AuthServiceImpl implements AuthService {
 		Request req = new Request("cn.alibaba.open", "offer.getAllOfferList", 1);
 		req.setParam("sellerMemberId", token.getMemberId());
 		req.setParam("type", "SALE");
+		req.setParam("orderBy", "gmt_modified:asc");
 		req.setParam("returnFields", new String[] { "offerId", "detailsUrl", "offerStatus", "subject",
 				"qualityLevel", "productUnitWeight", "imageListdd " });
 		// 不好用的属性："unitPrice"
@@ -291,7 +421,6 @@ public class AuthServiceImpl implements AuthService {
 		try {
 			req.setAccessToken(token.accessToken());
 			APIResponse resp = APIResponse.warp(client.send(req, null, AliSDK.authPolicy()));
-			System.out.println(resp.data);
 			return AliOldResult.newProductListResult(resp);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
