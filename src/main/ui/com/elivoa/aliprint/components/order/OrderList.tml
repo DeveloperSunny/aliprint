@@ -28,10 +28,10 @@
 											<a href="#">${entity.shortName}</a>
 										</p>
 										<p class="S-textB">
-											颜色：<strong>红色</strong>
+											颜色：<strong>${entity.specInfo.get('颜色')}</strong>
 										</p>
 										<p class="S-textB">
-											尺码：<strong>均码</strong>
+											尺码：<strong>${entity.specInfo.get('尺码')}</strong>
 										</p>
 									</div>
 									<t:if test="isSend">
@@ -52,21 +52,28 @@
 								<td rowspan="${order.entities.size()}" width="300">
 									<div>
 										<strong>${order.toFullname}</strong>，${order.toMobile}，${order.toArea} (${order.toPost})
-									</div> 
-									<t:if test="order.buyerOrderMemo?.isValid()">
-										<div class="note S-textB">
-											<strong>客户留言：</strong>${order.buyerOrderMemo.remark}
+									</div> <t:if test="order.buyerFeedback">
+										<div class="note S-textB"
+											style="border: solid 1px #177cb0; padding: 2px 4px; color: #424b50">
+											<strong>客户留言：</strong>${order.buyerFeedback}
 										</div>
-									</t:if>
-									<t:if test="order.sellerOrderMemo?.isValid()">
+									</t:if> <t:if test="order.buyerOrderMemo?.isValid()">
+										<div class="note S-textB"
+											style="border: solid 1px #9d2932; padding: 2px 4px; color: #424b50">
+											<strong>偷窥客户的留言：</strong>[${order.buyerOrderMemo.remarkIcon}]
+											${order.buyerOrderMemo.remark}
+										</div>
+									</t:if> <t:if test="order.sellerOrderMemo?.isValid()">
 										<div class="note S-textB">
-											<strong>备注信息：</strong>[${order.sellerOrderMemo.remarkIcon}] ${order.sellerOrderMemo.remark}
+											<strong>备注信息：</strong>[${order.sellerOrderMemo.remarkIcon}]
+											${order.sellerOrderMemo.remark}
 										</div>
 									</t:if>
 								</td>
 								<td rowspan="${order.entities.size()}" width="100">
 									<div>
-										<i class="Ico-print"></i> <a href="#">打印快递单</a>
+										<i class="Ico-print"></i> 
+										<t:pagelink page="print/order" context="order.id" target="_blank">打印快递单</t:pagelink>
 									</div>
 									<div>
 										<i class="Ico-tracking"></i> <a href="#">输入单号</a>
@@ -77,31 +84,6 @@
 
 					</t:loop>
 
-					<!-- 
-					<tr>
-						<td valign="top">
-							<div class="product">
-								<div class="M_img_50">
-									<a href="#"><img src="images/product.png" /></a>
-								</div>
-								<div class="info">
-									<p>
-										<a href="#">菠萝花开衫</a>
-									</p>
-									<p class="S-textB">
-										颜色：<strong>红色</strong>
-									</p>
-									<p class="S-textB">
-										尺码：<strong>均码</strong>
-									</p>
-								</div>
-							</div>
-						</td>
-						<td width="40" align="center">
-							<div class="num">10</div>
-						</td>
-					</tr>
-	 -->
 					<tr>
 						<td class="footer" colspan="5">
 							<div class="total">
@@ -109,8 +91,10 @@
 									class="S-textB">（运费${order.carriageDouble}元）</span>
 							</div>
 							<div>
-								<span class="from">发件人：黄小姐 1502348888 </span><a class="S-linkB" href="#"><i
-									class="Ico-edit"></i>编辑发件人</a>
+								<span class="from">发件人： <t:if test="order.sellAgent">
+										${order.sellAgent.senderName} ${order.sellAgent.senderPhone}
+									</t:if>
+								</span> <a class="S-linkB" href="#"><i class="Ico-edit"></i>编辑发件人</a>
 							</div>
 						</td>
 					</tr>

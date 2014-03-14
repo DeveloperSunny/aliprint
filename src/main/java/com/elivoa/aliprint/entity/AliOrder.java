@@ -28,9 +28,6 @@ public class AliOrder {
 	private Integer buyerRateStatus; // 买家评价状态。5未评价，4已评价
 	private Integer sellerRateStatus; // 卖家评价状态。5未评价，4已评价
 
-	private String closeReason; // 关闭原因
-	private String buyerFeedback; // 买家留言
-
 	private String toFullName;// ** can't be fetch form new version of API because of privacy.
 	private String toMobile;// ** same to above
 	private String toPost; // 收货人邮编
@@ -72,12 +69,16 @@ public class AliOrder {
 
 	private List<AliOrderEntity> entities; // 订单明细
 
+	private String closeReason; // 关闭原因
+	private String buyerFeedback; // 买家留言
 	private AliOrderMemo buyerOrderMemo; // 买家备注
 	private AliOrderMemo sellerOrderMemo; // 卖家备注
 	private AliOrderMemo[] orderMemoList; // 备注列表
 
 	// private LogisticsOrderModel[] logisticsOrderList; // 物流单列表
 	// private OrderInvoiceModel orderInvoiceModel; // 发票信息
+
+	private SellAgent sellAgent;
 
 	public AliOrder(APIResponse resp) {
 
@@ -147,7 +148,7 @@ public class AliOrder {
 
 		List<APIResponse> respList = resp.getRespList("orderMemoList");
 		// OrderMemoModel[] orderMemoList =resp.getOrderMemoModel[]("orderMemoList");
-
+		System.out.println("done" + respList);
 		// if (this.buyerOrderMemo != null || this.sellerOrderMemo != null || respList != null) {
 		// System.out.println("not null");
 		// }
@@ -161,6 +162,7 @@ public class AliOrder {
 	}
 
 	// methods
+
 	public String getOrderDetailsLink() {
 		return String.format("http://trade.1688.com/order/unify_seller_detail.htm?orderId=%s", this.id);
 	}
@@ -204,26 +206,14 @@ public class AliOrder {
 		return "-";
 	}
 
-	// public List<AliOrderEntity> getFirstEntity() {
-	// if (null != this.entities && this.entities.size() > 0) {
-	// List<AliOrderEntity> newlist = Lists.newArrayList(1);
-	// newlist.add(this.entities.get(0));
-	// return newlist;
-	// }
-	// return null;
-	// }
-	//
-	// public List<AliOrderEntity> getRemainsEntities() {
-	// if (null != this.entities && this.entities.size() > 1) {
-	// List<AliOrderEntity> newlist = Lists.newArrayList(this.entities.size() - 1);
-	// for (int i = 1; i < this.entities.size(); i++) {
-	// newlist.add(this.entities.get(i));
-	// }
-	// return newlist;
-	// }
-	// return null;
-	// }
-	//
+	// 唐敏，13888335593 ，，云南省 昆明市 五华区 昆明市北市区五华区实力郡城8幢3单元202
+	public String getAddressToSplit() {
+		String address = this.toArea;
+		if (null != address && address.trim().endsWith("，")) {
+			address = address.substring(0, address.length() - 1);
+		}
+		return String.format("%s,%s,,%s", this.toFullName, this.toMobile, address);
+	}
 
 	// accessors
 
@@ -665,6 +655,14 @@ public class AliOrder {
 
 	public void setToMobile(String toMobile) {
 		this.toMobile = toMobile;
+	}
+
+	public SellAgent getSellAgent() {
+		return sellAgent;
+	}
+
+	public void setSellAgent(SellAgent sellAgent) {
+		this.sellAgent = sellAgent;
 	}
 
 }

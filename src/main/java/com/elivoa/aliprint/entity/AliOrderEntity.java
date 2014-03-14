@@ -1,9 +1,11 @@
 package com.elivoa.aliprint.entity;
 
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Map;
 
 import com.elivoa.aliprint.data.APIResponse;
+import com.google.common.collect.Maps;
 
 /**
  * <code>
@@ -47,8 +49,10 @@ import com.elivoa.aliprint.data.APIResponse;
    buyerRateStatus=5,
    unit=件,
    specId=94d1d179497744028aa76873afdeba62,
-   productName=2014年dazzle地素新款水溶蕾丝雪纺拼接绣花圆领套头羊毛毛衣, guaranteeSupport=false
+   productName=2014年dazzle地素新款水溶蕾丝雪纺拼接绣花圆领套头羊毛毛衣,
+   guaranteeSupport=false
 
+   specInfoModel={specItems=[{specValue=薰衣草色, specName=颜色}, {specValue=S, specName=尺码}]}
 
    complaintStatus={
      valid=true,
@@ -65,7 +69,8 @@ import com.elivoa.aliprint.data.APIResponse;
      mix=false,
      virtualGoods=false
    },
-
+   
+	
   }
 
  * </code>
@@ -198,6 +203,8 @@ public class AliOrderEntity {
 		this.currencyCode = resp.getString("currencyCode");
 		this.buyerRateStatus = resp.getInt("buyerRateStatus");
 
+		// specInfoModel={specItems=[{specValue=薰衣草色, specName=颜色}, {specValue=S, specName=尺码}]}
+
 		//
 		// private String[] productPic;//
 		// =[http://img.china.alibaba.com:80//img/order/trading/049/283/058554745/980311532_1891461501.310x310.jpg],
@@ -211,14 +218,18 @@ public class AliOrderEntity {
 		// }
 		// }
 		//
-		// // order entity specInfo
-		// List<APIResponse> specRespList = resp.getRespList("specInfo");
-		// this.specInfo = Maps.newHashMap();
-		// if (null != specRespList) {
-		// for (APIResponse rr : specRespList) {
-		// this.specInfo.put(rr.getString("specName"), rr.getString("specValue"));
-		// }
-		// }
+
+		// order entity specInfo
+		APIResponse simResp = resp.getResp("specInfoModel");
+		if (null != simResp) {
+			List<APIResponse> specRespList = simResp.getRespList("specItems");
+			this.specInfo = Maps.newHashMap();
+			if (null != specRespList) {
+				for (APIResponse rr : specRespList) {
+					this.specInfo.put(rr.getString("specName"), rr.getString("specValue"));
+				}
+			}
+		}
 
 	}
 

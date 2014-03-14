@@ -8,6 +8,7 @@ import org.apache.tapestry5.ioc.ServiceBinder;
 import org.apache.tapestry5.ioc.annotations.SubModule;
 
 import com.alibaba.openapi.client.policy.ClientPolicy;
+import com.elivoa.aliprint.dal.AgentDao;
 import com.elivoa.aliprint.dal.ProductDao;
 import com.elivoa.aliprint.dal.TokenDao;
 import com.elivoa.aliprint.module.BaseModule;
@@ -103,7 +104,8 @@ public class AliprintModule {
 
 		binder.bind(TokenDao.class);
 		binder.bind(ProductDao.class);
-
+		binder.bind(AgentDao.class);
+		
 		// binder.bind(QuerySuggestion.class);
 		// binder.bind(QuerySuggestionBuild.class);
 

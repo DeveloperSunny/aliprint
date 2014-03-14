@@ -37,6 +37,13 @@ public class AliOrderMemo {
 		this.remarkIcon = resp.getString("remarkIcon");
 	}
 
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("member:").append(memberId).append(";");
+		sb.append(remark).append("]]");
+		return sb.toString();
+	}
+
 	public boolean isValid() {
 		return this.remark != null && !this.remark.equalsIgnoreCase("");
 	}

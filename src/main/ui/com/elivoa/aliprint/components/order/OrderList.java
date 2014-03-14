@@ -33,8 +33,8 @@ public class OrderList {
 	Object setupRender() {
 		token.getMemberId();
 
-		Params params = Params.create("withAlias", true);
-		orders = sdk.listOrders(token, OrderStatus.WAIT_BUYER_PAY, 10, 1, params, true, true);
+		Params params = Params.create().add("@withAlias").add("@withSenderInfo");
+		orders = sdk.listOrders(token, OrderStatus.WAIT_BUYER_PAY, 10, 1, params, true, false);
 		if (orders == null) {
 			return false;
 		}

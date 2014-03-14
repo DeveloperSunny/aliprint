@@ -38,8 +38,14 @@ public class Params {
 		return this;
 	}
 
+	public Params add(String key) {
+		this.params.put(key, true);
+		return this;
+	}
+
 	public Boolean getBoolean(String key) {
-		return (Boolean) this.params.get(key);
+		Boolean b = (Boolean) this.params.get(key);
+		return null == b ? false : b;
 	}
 
 	public static void injectParameters(Request req, Params params) {
@@ -51,7 +57,9 @@ public class Params {
 	public Params injectParameters(Request req) {
 		if (null != params) {
 			for (String k : params.keySet()) {
-				req.setParam(k, params.get(k));
+				if (!k.startsWith("@")) {
+					req.setParam(k, params.get(k));
+				}
 			}
 		}
 		return this;

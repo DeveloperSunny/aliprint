@@ -16,6 +16,7 @@ import com.alibaba.openapi.client.policy.ClientPolicy;
 import com.beust.jcommander.internal.Maps;
 import com.elivoa.aliprint.alisdk.AliSDK;
 import com.elivoa.aliprint.alisdk.AliToken;
+import com.elivoa.aliprint.dal.AgentDao;
 import com.elivoa.aliprint.dal.ProductDao;
 import com.elivoa.aliprint.dal.TokenDao;
 import com.elivoa.aliprint.data.APIResponse;
@@ -28,6 +29,7 @@ import com.elivoa.aliprint.entity.AliOrderEntity;
 import com.elivoa.aliprint.entity.AliProduct;
 import com.elivoa.aliprint.entity.AliResult;
 import com.elivoa.aliprint.entity.ProductAlias;
+import com.elivoa.aliprint.entity.SellAgent;
 import com.elivoa.aliprint.exceptions.NeedAuthenticationException;
 import com.elivoa.aliprint.services.AuthService;
 import com.google.common.collect.Lists;
@@ -71,6 +73,9 @@ public class AuthServiceImpl implements AuthService {
 
 	@Inject
 	ProductDao productDao;
+
+	@Inject
+	AgentDao agentDao;
 
 	// constructures
 
@@ -245,9 +250,22 @@ public class AuthServiceImpl implements AuthService {
 		return null;
 	}
 
-	// list orders
+	/**
+	 * List orders with full information.
+	 * 
+	 * @param withPrivateAddress
+	 *            use old API to fetch order list again to gain private address information which
+	 *            used in address printing.
+	 * @param withUserMemo
+	 *            use another API for each order to fetch user memo, including buyer's private
+	 *            memo.(here must be a bug.)
+	 * @param params__withAlias
+	 *            get product alias from database;(for short)
+	 * @param params__withSenderInfo
+	 *            专为代发考虑，发件人信息，电话以及自定义信息；
+	 */
 	public AliResult<AliOrder> listOrders(AliToken token, OrderStatus status, int pagesize, int page, Params params,
-			boolean withPrivateAddress, boolean withRightMemo) {
+			boolean withPrivateAddress, boolean withUserMemo) {
 		Request req = new Request("cn.alibaba.open", "trade.order.list.get", 2);
 		params = Params.init(params);
 
@@ -270,48 +288,20 @@ public class AuthServiceImpl implements AuthService {
 			}
 			// extra data;
 			if (withPrivateAddress) {
-				AliOldResult<AliOldOrder> oldListOrders = this.oldListOrders(token, status, pagesize, page, params);
-				// copy address info into the list.
-				copyAddressIntoNewList(result, oldListOrders);
+				fillPrivateAddress(token, result.getModels(), status, pagesize, page, null);
 			}
-			if (withRightMemo) {
+			if (withUserMemo) {
 				overrideOrderMemo(token, result);
 			}
-			if (params.getBoolean("withAlias")) {
-				// fill map with ids;
-				Map<Long, ProductAlias> map = Maps.newHashMap();
-				for (AliOrder order : result.getModels()) {
-					List<AliOrderEntity> entities = order.getEntities();
-					if (null != entities) {
-						for (AliOrderEntity entity : entities) {
-							map.put(entity.getSourceId(), null);
-						}
-					}
-				}
-
-				try {
-					List<ProductAlias> aliaslist = productDao.getProductAlias(map.keySet());
-					if (null != aliaslist) {
-						for (ProductAlias alias : aliaslist) {
-							map.put(alias.getId(), alias);
-						}
-					}
-					for (AliOrder order : result.getModels()) {
-						List<AliOrderEntity> entities = order.getEntities();
-						if (null != entities) {
-							for (AliOrderEntity entity : entities) {
-								ProductAlias alias = map.get(entity.getSourceId());
-								if (null != alias) {
-									entity.setAlias(alias.getAlias());
-								}
-							}
-						}
-					}
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-
+			if (params.getBoolean("@withAlias")) {
+				this.fillAlias(result.getModels());
 			}
+
+			// get sender info.
+			if (params.getBoolean("@withSenderInfo")) {
+				this.fillSenderInfo(result.getModels());
+			}
+
 			return result;
 		} catch (InterruptedException e) {
 			e.printStackTrace();
@@ -321,6 +311,27 @@ public class AuthServiceImpl implements AuthService {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	private void fillPrivateAddress(AliToken token, List<AliOrder> models, OrderStatus status, int pagesize,
+			int page, Params params) {
+		AliOldResult<AliOldOrder> oldListOrders = this.oldListOrders(token, status, pagesize, page, params);
+		// copy address info into the list.
+		// copyAddressIntoNewList(result, oldListOrders);
+		if (null != oldListOrders) {
+			for (AliOldOrder oldOrder : oldListOrders.getReturns()) {
+				for (AliOrder order : models) {
+					// order id matches
+					if (oldOrder.getId() == order.getId()) {
+						order.setToFullName(oldOrder.getToFullName());
+						order.setToMobile(oldOrder.getToMobile());
+						order.setToArea(oldOrder.getToArea());
+						order.setToPost(oldOrder.getToPost());
+					}
+				}
+			}
+		}
+
 	}
 
 	private void overrideOrderMemo(AliToken token, AliResult<AliOrder> result) {
@@ -336,19 +347,69 @@ public class AuthServiceImpl implements AuthService {
 		}
 	}
 
-	private void copyAddressIntoNewList(AliResult<AliOrder> result, AliOldResult<AliOldOrder> oldResult) {
-		if (null != oldResult) {
-			for (AliOldOrder oldOrder : oldResult.getReturns()) {
-				for (AliOrder order : result.getModels()) {
-					// order id matches
-					if (oldOrder.getId() == order.getId()) {
-						order.setToFullName(oldOrder.getToFullName());
-						order.setToMobile(oldOrder.getToMobile());
-						order.setToArea(oldOrder.getToArea());
-						order.setToPost(oldOrder.getToPost());
+	private void fillSenderInfo(AliOrder... orders) {
+		fillSenderInfo(Lists.newArrayList(orders));
+	}
+
+	private void fillSenderInfo(List<AliOrder> orders) {
+		Map<String, SellAgent> map = Maps.newHashMap();
+		for (AliOrder order : orders) {
+			map.put(order.getBuyerLoginId(), null);
+		}
+		try {
+			List<SellAgent> agents = agentDao.getAgents(map.keySet());
+			if (null != agents) {
+				for (SellAgent agent : agents) {
+					map.put(agent.getAliid(), agent);
+				}
+			}
+			for (AliOrder order : orders) {
+				SellAgent agent = map.get(order.getBuyerLoginId());
+				if (null != agent) {
+					order.setSellAgent(agent);
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void fillAlias(AliOrder... orders) {
+		fillAlias(Lists.newArrayList(orders));
+	}
+
+	private void fillAlias(List<AliOrder> orders) {
+		// fill map with ids;
+		Map<Long, ProductAlias> map = Maps.newHashMap();
+		for (AliOrder order : orders) {
+			List<AliOrderEntity> entities = order.getEntities();
+			if (null != entities) {
+				for (AliOrderEntity entity : entities) {
+					map.put(entity.getSourceId(), null);
+				}
+			}
+		}
+
+		try {
+			List<ProductAlias> aliaslist = productDao.getProductAlias(map.keySet());
+			if (null != aliaslist) {
+				for (ProductAlias alias : aliaslist) {
+					map.put(alias.getId(), alias);
+				}
+			}
+			for (AliOrder order : orders) {
+				List<AliOrderEntity> entities = order.getEntities();
+				if (null != entities) {
+					for (AliOrderEntity entity : entities) {
+						ProductAlias alias = map.get(entity.getSourceId());
+						if (null != alias) {
+							entity.setAlias(alias.getAlias());
+						}
 					}
 				}
 			}
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -366,6 +427,21 @@ public class AuthServiceImpl implements AuthService {
 			req.setAccessToken(token.accessToken());
 			APIResponse resp = APIResponse.warp(client.send(req, null, AliSDK.authPolicy()));
 			AliOrder order = new AliOrder(resp.getResp("orderModel"));
+
+			if (params.getBoolean("@withFullAddress")) {
+				List<AliOrder> ordersInstead = Lists.newArrayList();
+				ordersInstead.add(order);
+				fillPrivateAddress(token, ordersInstead, null, 1, 1, Params.create().add("orderId", orderId));
+			}
+
+			if (params.getBoolean("@withAlias")) {
+				this.fillAlias(order);
+			}
+
+			// get sender info.
+			if (params.getBoolean("@withSenderInfo")) {
+				this.fillSenderInfo(order);
+			}
 			return order;
 		} catch (InterruptedException e) {
 			e.printStackTrace();

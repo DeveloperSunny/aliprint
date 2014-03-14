@@ -11,7 +11,7 @@ import com.alibaba.openapi.client.policy.RequestPolicy;
 
 public class AliSDK {
 
-	private static RequestPolicy basePolicy = new RequestPolicy().setContentCharset("UTF-8").setTimeout(3000);
+	private static RequestPolicy basePolicy = new RequestPolicy().setContentCharset("UTF-8").setTimeout(6000);
 
 	// private static RequestPolicy authPolicy;
 
