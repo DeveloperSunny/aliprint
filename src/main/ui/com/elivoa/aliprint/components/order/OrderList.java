@@ -34,7 +34,7 @@ public class OrderList {
 		token.getMemberId();
 
 		Params params = Params.create().add("@withAlias").add("@withSenderInfo");
-		orders = sdk.listOrders(token, OrderStatus.WAIT_BUYER_PAY, 10, 1, params, true, false);
+		orders = sdk.listOrders(token, OrderStatus.WAIT_SELLER_SEND, 10, 1, params, true, false);
 		if (orders == null) {
 			return false;
 		}

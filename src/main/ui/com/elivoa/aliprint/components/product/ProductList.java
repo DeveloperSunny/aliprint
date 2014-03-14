@@ -1,7 +1,6 @@
 package com.elivoa.aliprint.components.product;
 
 import java.sql.SQLException;
-import java.util.List;
 
 import org.apache.tapestry5.annotations.Import;
 import org.apache.tapestry5.annotations.Parameter;
@@ -13,9 +12,9 @@ import org.apache.tapestry5.services.javascript.JavaScriptSupport;
 
 import com.elivoa.aliprint.alisdk.AliToken;
 import com.elivoa.aliprint.dal.ProductDao;
+import com.elivoa.aliprint.data.Params;
 import com.elivoa.aliprint.entity.AliOldResult;
 import com.elivoa.aliprint.entity.AliProduct;
-import com.elivoa.aliprint.entity.ProductAlias;
 import com.elivoa.aliprint.services.AuthService;
 
 @Import(library = "context:js/ProductList.js")
@@ -40,17 +39,7 @@ public class ProductList {
 		this.itemsPerPage = itemsPerPage <= 0 ? defaultItemsPerPage : itemsPerPage;
 		int page = (start / itemsPerPage) + 1;
 
-		this.products = sdk.listProducts(token, itemsPerPage, page, null);
-
-		// product alias from database;
-		List<ProductAlias> aliasList = productDao.listProducts();
-		for (AliProduct product : this.products.getReturns()) {
-			for (ProductAlias alias : aliasList) {
-				if (product.getOfferId() == alias.getId()) {
-					product.setAlias(alias.getAlias());
-				}
-			}
-		}
+		this.products = sdk.listProducts(token, itemsPerPage, page, Params.create().add("@withAlias"));
 
 	}
 

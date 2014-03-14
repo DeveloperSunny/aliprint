@@ -157,6 +157,9 @@ public class PrintOrder {
 			spliter = "<br/>";
 		}
 		this.contentHTML = sb.toString().replace("|SPLITER|", spliter);
+		if (this.realClothesCount < 2) {
+			this.contentHTML = "<br>" + this.contentHTML;
+		}
 	}
 
 	public int getYear() {
@@ -164,23 +167,27 @@ public class PrintOrder {
 	}
 
 	public int getMonth() {
-		return Calendar.getInstance().get(Calendar.MONTH);
+		return Calendar.getInstance().get(Calendar.MONTH) + 1;
 	}
 
 	public int getDay() {
 		return Calendar.getInstance().get(Calendar.DATE);
 	}
 
-	private void setContent2() {
-
-	}
-
-	private void setContent3() {
-
-	}
-
-	private void setContentN() {
-
+	public String getMobile() {
+		StringBuilder sb = new StringBuilder();
+		if (order.getToMobile() != null && order.getToMobile().trim().length() > 0
+				&& !order.getToMobile().trim().equalsIgnoreCase("null")) {
+			sb.append(order.getToMobile());
+		}
+		if (sb.length() > 0) {
+			sb.append(",");
+		}
+		if (order.getToPhone() != null && order.getToPhone().trim().length() > 0
+				&& !order.getToPhone().trim().equalsIgnoreCase("null")) {
+			sb.append(order.getToPhone());
+		}
+		return sb.toString();
 	}
 
 	@Inject

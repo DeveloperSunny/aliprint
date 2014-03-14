@@ -46,6 +46,21 @@ public class Index {
 		return null;
 	}
 
+	@Property
+	int start;
+
+	@Property
+	int itemsPerPage;
+
+	@Inject
+	@Symbol("pagesize.product.alias")
+	int defaultItemsPerPage;
+
+	void onActivate(int start, int itemsPerPage) {
+		this.start = start;
+		this.itemsPerPage = itemsPerPage <= 0 ? defaultItemsPerPage : itemsPerPage;
+	}
+
 	Object setupRender() {
 		System.out.println("===================================================");
 		return true;

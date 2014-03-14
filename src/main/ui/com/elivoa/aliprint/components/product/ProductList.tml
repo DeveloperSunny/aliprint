@@ -6,10 +6,11 @@
 				<strong><em>产品列表</em></strong> &lt;&lt;一共&nbsp;${products.total} 条产品
 			</div>
 
-			<table border="1" style="border-collapse: collapse;">
+			<table border="0" style="border-collapse: collapse; font-size: 14px;">
 				<thead>
 					<tr>
 						<td>ID</td>
+						<td>图</td>
 						<td>Subject</td>
 						<td>Alias</td>
 						<td>QualityLevel</td>
@@ -19,14 +20,20 @@
 				</thead>
 				<tbody>
 					<t:loop source="products.returns" value="product">
-						<tr>
-							<td>${product.offerId}</td>
+						<tr style="padding-bottom: 12px; margin-bottom: 12px; border-bottom: solid 1px #ddd">
+							<td align="right">${product.offerId}<br /> Stars:${product.qualityLevel} <br />
+								Price:${product.unitPriceDouble}
+							</td>
+							<td><img width="64" style="border: solid 1px #aaa; padding: 1px;"
+								src="${product.thumbnail}" /></td>
+
+
 							<td>${product.subject}</td>
 							<td><div class="A-alias">
 									<input type="text" class="alias" value="${product.alias}" productId="${product.offerId}" /><a
 										class="button" href="javascript:void(0);"></a>
 								</div></td>
-							<td>${product.qualityLevel}</td>
+							<td></td>
 							<td>${product.productUnitWeight}</td>
 							<td>${product.offerStatus}</td>
 						</tr>

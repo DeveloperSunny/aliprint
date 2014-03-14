@@ -30,6 +30,7 @@ public class AliOrder {
 
 	private String toFullName;// ** can't be fetch form new version of API because of privacy.
 	private String toMobile;// ** same to above
+	private String toPhone;
 	private String toPost; // 收货人邮编
 	private String toArea; // 收货人地址
 
@@ -99,6 +100,8 @@ public class AliOrder {
 		buyerFeedback = resp.getString("buyerFeedback");
 		toPost = resp.getString("toPost");
 		toArea = resp.getString("toArea");
+		toMobile = resp.getString("toMobile");
+		toPhone = resp.getString("toPhone");
 		alipayTradeId = resp.getString("alipayTradeId");
 		sellerCompanyName = resp.getString("sellerCompanyName");
 		sellerEmail = resp.getString("sellerEmail");
@@ -212,7 +215,9 @@ public class AliOrder {
 		if (null != address && address.trim().endsWith("，")) {
 			address = address.substring(0, address.length() - 1);
 		}
-		return String.format("%s,%s,,%s", this.toFullName, this.toMobile, address);
+		String mobile = this.toMobile != null && !this.toMobile.trim().equalsIgnoreCase("null") ? this.toMobile : "";
+		String phone = this.toPhone != null && !this.toPhone.trim().equalsIgnoreCase("null") ? this.toPhone : "";
+		return String.format("%s,%s,%s,%s", this.toFullName, mobile, phone, address);
 	}
 
 	// accessors
@@ -663,6 +668,14 @@ public class AliOrder {
 
 	public void setSellAgent(SellAgent sellAgent) {
 		this.sellAgent = sellAgent;
+	}
+
+	public String getToPhone() {
+		return toPhone;
+	}
+
+	public void setToPhone(String toPhone) {
+		this.toPhone = toPhone;
 	}
 
 }

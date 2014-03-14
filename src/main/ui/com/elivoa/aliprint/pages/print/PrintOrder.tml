@@ -71,7 +71,7 @@
 
 		<!--内件数量-->
 		<div class="Prnt_all" contenteditable="true"
-			style="position: absolute; left: 70mm; top: 68mm; text-align: center;">${realClothesCount}</div>
+			style="position: absolute; left: 70mm; top: 65mm; text-align: center;">${realClothesCount}</div>
 		<!--/内件数量-->
 		<!--寄件人签名-->
 		<div id="fromNameMain" class="Prnt_all Prnt_name"
@@ -104,7 +104,7 @@
 		<!--/收件地址-->
 		<!--联系电话-->
 		<div id="buyerPhone" class="Prnt_all" style="position: absolute; left: 135mm; top: 50mm;"
-			contenteditable="true">${order.toMobile}</div>
+			contenteditable="true">${mobile}</div>
 		<div id="buyerTel" class="Prnt_all"
 			style="position: absolute; left: 180mm; top: 50mm; font-size: 10pt; white-space: nowrap"
 			contenteditable="true">${order.toPost}</div>

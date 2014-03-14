@@ -3,7 +3,6 @@ package com.elivoa.aliprint.entity;
 import java.sql.Timestamp;
 import java.util.List;
 
-import com.beust.jcommander.internal.Lists;
 import com.elivoa.aliprint.data.APIResponse;
 
 /**
@@ -37,6 +36,7 @@ public class AliOldOrder {
 	// address
 	private String toFullName;// =张瑞
 	private String toMobile;// =18671999078,
+	private String toPhone;
 	private String toArea;// =湖北省 荆门市 掇刀区 五一路东站36号,
 	private String toPost;// =448000, ---- ????
 
@@ -66,18 +66,19 @@ public class AliOldOrder {
 		// address
 		this.toFullName = resp.getString("toFullName");
 		this.toMobile = resp.getString("toMobile");
+		this.toPhone = resp.getString("toPhone");
 		this.toArea = resp.getString("toArea");
 		this.toPost = resp.getString("toPost");
 
 		// order entities; // TODO disable this. no use.
-//		List<APIResponse> list = resp.getRespList("orderEntries");
-//		if (null != list) {
-//			this.orderEntities = Lists.newArrayList();
-//			for (APIResponse respEntity : list) {
-//				AliOrderEntity entity = new AliOrderEntity(respEntity);
-//				this.orderEntities.add(entity);
-//			}
-//		}
+		// List<APIResponse> list = resp.getRespList("orderEntries");
+		// if (null != list) {
+		// this.orderEntities = Lists.newArrayList();
+		// for (APIResponse respEntity : list) {
+		// AliOrderEntity entity = new AliOrderEntity(respEntity);
+		// this.orderEntities.add(entity);
+		// }
+		// }
 	}
 
 	// accessors
@@ -248,6 +249,14 @@ public class AliOldOrder {
 
 	public void setToPost(String toPost) {
 		this.toPost = toPost;
+	}
+
+	public String getToPhone() {
+		return toPhone;
+	}
+
+	public void setToPhone(String toPhone) {
+		this.toPhone = toPhone;
 	}
 
 }

@@ -327,6 +327,7 @@ public class AuthServiceImpl implements AuthService {
 						order.setToMobile(oldOrder.getToMobile());
 						order.setToArea(oldOrder.getToArea());
 						order.setToPost(oldOrder.getToPost());
+						order.setToPhone(oldOrder.getToPhone());
 					}
 				}
 			}
@@ -484,12 +485,9 @@ public class AuthServiceImpl implements AuthService {
 		req.setParam("type", "SALE");
 		req.setParam("orderBy", "gmt_modified:asc");
 		req.setParam("returnFields", new String[] { "offerId", "detailsUrl", "offerStatus", "subject",
-				"qualityLevel", "productUnitWeight", "imageListdd " });
+				"qualityLevel", "productUnitWeight", "imageList", "detailsUrl" });
 		// 不好用的属性："unitPrice"
 
-		// if (null != status) {
-		// req.setParam("orderStatus", status.toString());
-		// }
 		req.setParam("pageSize", pagesize);
 		req.setParam("page", page);
 		Params.injectParameters(req, params);
@@ -497,7 +495,26 @@ public class AuthServiceImpl implements AuthService {
 		try {
 			req.setAccessToken(token.accessToken());
 			APIResponse resp = APIResponse.warp(client.send(req, null, AliSDK.authPolicy()));
-			return AliOldResult.newProductListResult(resp);
+			AliOldResult<AliProduct> result = AliOldResult.newProductListResult(resp);
+
+			if (params.getBoolean("@withAlias")) {
+				// product alias from database;
+				List<ProductAlias> aliasList;
+				try {
+					aliasList = productDao.listProducts();
+					for (AliProduct product : result.getReturns()) {
+						for (ProductAlias alias : aliasList) {
+							if (product.getOfferId() == alias.getId()) {
+								product.setAlias(alias.getAlias());
+							}
+						}
+					}
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+
+			}
+			return result;
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		} catch (ExecutionException e) {
