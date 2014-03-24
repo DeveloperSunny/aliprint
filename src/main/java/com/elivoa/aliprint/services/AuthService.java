@@ -62,4 +62,10 @@ public interface AuthService {
 
 	AliOldResult<AliProduct> listProducts(AliToken token, int pagesize, int page, Params params);
 
+	// 发货
+
+	boolean sendAll(AliToken token, Long orderId, String logisticsBillNo);
+
+	boolean send(AliToken token, String memberId, Long orderId, String orderEntryIds, String logisticsBillNo);
+
 }

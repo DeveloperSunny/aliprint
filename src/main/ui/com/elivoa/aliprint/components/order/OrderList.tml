@@ -25,14 +25,21 @@
 									</div>
 									<div class="info">
 										<p>
-											<a href="#">${entity.shortName}</a>
+											<a href="http://detail.1688.com/offer/${entity.sourceId}.html" target="_black">${entity.shortName}</a>
+											<t:if test="entityStatusStr">
+												<span style="font-size:16px;color:#9d2932">【${entityStatusStr}】</span>
+											</t:if>
 										</p>
-										<p class="S-textB">
-											颜色：<strong>${entity.specInfo.get('颜色')}</strong>
-										</p>
-										<p class="S-textB">
-											尺码：<strong>${entity.specInfo.get('尺码')}</strong>
-										</p>
+										<t:if test="entityColor">
+											<p class="S-textB">
+												颜色：<strong>${entityColor}</strong>
+											</p>
+										</t:if>
+										<t:if test="entitySize">
+											<p class="S-textB">
+												尺码：<strong>${entitySize}</strong>
+											</p>
+										</t:if>
 									</div>
 									<t:if test="isSend">
 										<div class="send"></div>
@@ -72,7 +79,7 @@
 								</td>
 								<td rowspan="${order.entities.size()}" width="100">
 									<div>
-										<i class="Ico-print"></i> 
+										<i class="Ico-print"></i>
 										<t:pagelink page="print/order" context="order.id" target="_blank">打印快递单</t:pagelink>
 									</div>
 									<div>

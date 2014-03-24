@@ -1,6 +1,8 @@
 package com.elivoa.aliprint.services.impl;
 
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -17,6 +19,7 @@ import com.beust.jcommander.internal.Maps;
 import com.elivoa.aliprint.alisdk.AliSDK;
 import com.elivoa.aliprint.alisdk.AliToken;
 import com.elivoa.aliprint.dal.AgentDao;
+import com.elivoa.aliprint.dal.PrintHistoryDao;
 import com.elivoa.aliprint.dal.ProductDao;
 import com.elivoa.aliprint.dal.TokenDao;
 import com.elivoa.aliprint.data.APIResponse;
@@ -26,8 +29,10 @@ import com.elivoa.aliprint.entity.AliOldOrder;
 import com.elivoa.aliprint.entity.AliOldResult;
 import com.elivoa.aliprint.entity.AliOrder;
 import com.elivoa.aliprint.entity.AliOrderEntity;
+import com.elivoa.aliprint.entity.AliOrderMemo;
 import com.elivoa.aliprint.entity.AliProduct;
 import com.elivoa.aliprint.entity.AliResult;
+import com.elivoa.aliprint.entity.PrintHistory;
 import com.elivoa.aliprint.entity.ProductAlias;
 import com.elivoa.aliprint.entity.SellAgent;
 import com.elivoa.aliprint.exceptions.NeedAuthenticationException;
@@ -523,5 +528,103 @@ public class AuthServiceImpl implements AuthService {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	public boolean sendAll(AliToken token, Long orderId, String logisticsBillNo) {
+		AliOrder order = this.getOrder(token, orderId, Params.create("@withFullAddress", true));
+		if (null != order) {
+			StringBuilder sb = new StringBuilder();
+			int count = 0;
+			for (AliOrderEntity entity : order.getEntities()) {
+				if (count++ > 0) {
+					sb.append(",");
+				}
+				sb.append(entity.getId());
+			}
+
+			// first save into
+			PrintHistory history = new PrintHistory();
+			history.setOrderId(order.getId());
+			history.setTotalPrice(order.getSumPaymentDouble());
+			history.setBuyerLoginId(order.getBuyerLoginId());
+			AliOrderMemo memo = order.getBuyerOrderMemo();
+			if (null != memo) {
+				history.setBuyerMemo(memo.getRemark());
+			}
+			history.setBuyerFeedback(order.getBuyerFeedback());
+			history.setToName(order.getToFullName());
+			history.setToPhone(order.getToPhone());
+			history.setToMobile(order.getToMobile());
+			history.setToAddress(order.getToArea());
+			history.setToPost(order.getToPost());
+			history.setLogisticsCompany("YTO");
+			history.setTrackingNumber(logisticsBillNo);
+			try {
+				historydao.saveupdates(history);
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			//
+			return send(token, order.getSellerMemberId(), orderId, sb.toString(), logisticsBillNo);
+			// return false;
+		}
+		return false;
+	}
+
+	@Inject
+	PrintHistoryDao historydao;
+
+	private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+
+	/**
+	 * <code>
+		memberId	String	 是	用户中文站memberId	memberId	
+		orderId	String	 是	订单ID	123423	
+		orderEntryIds	String	 是	订单明细ID, 多个明细请用英文逗号分隔	13234,1233	
+		tradeSourceType	String	 是	交易订单来源,支持的来源有：cbu-trade	cbu-trade	
+		remarks	String	否	用户备注	备注	
+		logisticsCompanyId	String	 是	物流公司ID	8	
+		selfCompanyName	String	否	logisticsCompanyId=8时，这个字段必填，需要填写其他的物流公司名称	德邦物流	
+		logisticsBillNo	String	 是	物流公司运单号		
+		gmtSystemSend	String	 是	系统发货时间	2012-04-13 09:38:00	
+		gmtLogisticsCompanySend	String	 是	卖家发货时间	2012-04-13 09:38:00
+	</code>
+	 */
+	public boolean send(AliToken token, String memberId, Long orderId, String orderEntryIds, String logisticsBillNo) {
+
+		Request req = new Request("cn.alibaba.open", "e56.logistics.offline.send", 1);
+		Params params = Params.create();
+		params.add("memberId", memberId);
+		params.add("orderId", orderId);
+		params.add("orderEntryIds", orderEntryIds);
+		params.add("tradeSourceType", "cbu-trade");
+		params.add("remarks", "--");
+		params.add("logisticsCompanyId", "2");// 圆通
+		params.add("logisticsBillNo", logisticsBillNo);
+		Date now = new Date(System.currentTimeMillis());
+		params.add("gmtSystemSend", sdf.format(now));
+		params.add("gmtLogisticsCompanySend", sdf.format(now));
+		Params.injectParameters(req, params);
+
+		try {
+			req.setAccessToken(token.accessToken());
+			APIResponse resp = APIResponse.warp(client.send(req, null, AliSDK.authPolicy()));
+			if (resp != null) {
+				// TODO 反馈错误信息
+				if (resp.getBoolean("success")) {
+					return true;
+				} else {
+					System.out.println(resp.data);
+					return false;
+				}
+			}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		} catch (TimeoutException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 }

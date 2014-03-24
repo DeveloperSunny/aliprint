@@ -1,6 +1,5 @@
 <html t:type="layout" xmlns:p="tapestry:parameter"
-	xmlns:t="http://tapestry.apache.org/schema/tapestry_5_3.xsd"
-	title="Alibaba Smart Print System">
+	xmlns:t="http://tapestry.apache.org/schema/tapestry_5_3.xsd" title="Alibaba Smart Print System">
 <!--  TODO why here title passed is lowercased. -->
 
 <!-- Most of the page content, including <head>, <body>, etc. tags, comes from Layout.tml -->
@@ -22,7 +21,14 @@
 
 <div>
 	<span>订单列表</span>
-	<t:order.List />
+
+	<t:order.List t:id="orderlist" start="start" itemsPerPage="itemsPerPage" />
+
+	<div style="border: solid 1px #999999; padding: 8px;">
+		<t:ui.pager total="orderlist.totalItems" start="start" n="itemsPerPage"
+			linkTemplate="pagerTemplate" />
+	</div>
+	<!-- start="start" itemsPerPage="itemsPerPage" -->
 </div>
 
 <div>
@@ -30,17 +36,14 @@
 	<t:actionlink t:id="abc">TEST LINK</t:actionlink>
 </div>
 
+<!-- 
 <p:sidebarTitle>Account Info</p:sidebarTitle>
 <p:sidebar>
 	<p>
 		<t:pagelink page="Index">refresh page</t:pagelink>
 	</p>
 </p:sidebar>
-
-
-
-
-
+ -->
 
 
 

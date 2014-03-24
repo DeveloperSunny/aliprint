@@ -1,5 +1,6 @@
 package com.elivoa.aliprint.components.order;
 
+import org.apache.tapestry5.annotations.Parameter;
 import org.apache.tapestry5.annotations.Property;
 import org.apache.tapestry5.annotations.SessionState;
 import org.apache.tapestry5.ioc.annotations.Inject;
@@ -30,16 +31,31 @@ public class OrderList {
 	@Property
 	String _specName;
 
-	Object setupRender() {
-		token.getMemberId();
+	@Parameter
+	Integer start;
 
-		Params params = Params.create().add("@withAlias").add("@withSenderInfo");
-		orders = sdk.listOrders(token, OrderStatus.WAIT_SELLER_SEND, 10, 1, params, true, false);
+	@Parameter
+	Integer itemsPerPage;
+
+	Object setupRender() {
+		// this.start = this.start < 0 ? 0 : this.start;
+		// this.itemsPerPage = this.itemsPerPage <= 0 ? defaultItemsPerPage : itemsPerPage;
+
+		int page = (start / itemsPerPage) + 1;
+
+		orders = sdk.listOrders(token, OrderStatus.WAIT_SELLER_SEND, itemsPerPage, page,
+				Params.create().add("@withAlias").add("@withSenderInfo"), true, true);
 		if (orders == null) {
 			return false;
 		}
 		return true;
 	}
+
+	public int getTotalItems() {
+		return orders.getTotal();
+	}
+
+	// something in loop
 
 	public boolean getIsFirstEntity() {
 		return null != this._index && this._index == 0;
@@ -68,6 +84,33 @@ public class OrderList {
 		}
 		return false;
 	}
+
+	public String getEntityStatusStr() {
+		if (OrderStatus.CANCEL.toString().equalsIgnoreCase(this._entity.getEntryStatus())) {
+			return "已取消";
+		} else if (OrderStatus.WAIT_BUYER_PAY.toString().equalsIgnoreCase(this._entity.getEntryStatus())) {
+			return "未付款";
+		}
+		return null;
+	}
+
+	public String getEntityColor() {
+		if (this._entity != null && this._entity.getSpecInfo() != null) {
+			String color = this._entity.getSpecInfo().get("颜色");
+			return color == null ? null : color;
+		}
+		return null;
+	}
+
+	public String getEntitySize() {
+		if (this._entity != null && this._entity.getSpecInfo() != null) {
+			String size = this._entity.getSpecInfo().get("尺码");
+			return size == null ? null : size;
+		}
+		return null;
+	}
+
+	// service
 
 	@Inject
 	AuthService sdk;

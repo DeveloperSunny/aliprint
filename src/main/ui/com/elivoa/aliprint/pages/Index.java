@@ -5,13 +5,17 @@ import java.net.URL;
 import java.util.Date;
 
 import org.apache.tapestry5.SymbolConstants;
+import org.apache.tapestry5.annotations.Cached;
+import org.apache.tapestry5.annotations.Component;
 import org.apache.tapestry5.annotations.Property;
 import org.apache.tapestry5.annotations.SessionState;
 import org.apache.tapestry5.ioc.annotations.Inject;
 import org.apache.tapestry5.ioc.annotations.Symbol;
+import org.apache.tapestry5.services.PageRenderLinkSource;
 import org.apache.tapestry5.services.Response;
 
 import com.elivoa.aliprint.alisdk.AliToken;
+import com.elivoa.aliprint.components.order.OrderList;
 import com.elivoa.aliprint.exceptions.NeedAuthenticationException;
 import com.elivoa.aliprint.services.AuthService;
 
@@ -27,6 +31,9 @@ public class Index {
 	AliToken token;
 
 	Object onActivate() throws MalformedURLException {
+		// fix values.
+		this.start = this.start < 0 ? 0 : this.start;
+		this.itemsPerPage = this.itemsPerPage <= 0 ? defaultItemsPerPage : itemsPerPage;
 
 		// authenticate process.
 		try { // TODO exception not needed.
@@ -56,13 +63,16 @@ public class Index {
 	@Symbol("pagesize.product.alias")
 	int defaultItemsPerPage;
 
+	@Component
+	@Property
+	OrderList orderlist;
+
 	void onActivate(int start, int itemsPerPage) {
 		this.start = start;
-		this.itemsPerPage = itemsPerPage <= 0 ? defaultItemsPerPage : itemsPerPage;
+		this.itemsPerPage = itemsPerPage;
 	}
 
 	Object setupRender() {
-		System.out.println("===================================================");
 		return true;
 	}
 
@@ -75,6 +85,12 @@ public class Index {
 		}
 		return url;
 
+	}
+
+	@Cached
+	public String getPagerTemplate() {
+		return pageRenderLinkSource.createPageRenderLinkWithContext(Index.class, "__start__", "__itemsPerPage__")
+				.toURI();
 	}
 
 	public Date getCurrentTime() {
@@ -92,6 +108,9 @@ public class Index {
 
 	@Inject
 	Response response;
+
+	@Inject
+	PageRenderLinkSource pageRenderLinkSource;
 
 	// symbols
 

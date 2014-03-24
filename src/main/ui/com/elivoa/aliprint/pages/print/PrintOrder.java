@@ -6,14 +6,21 @@ import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.Map;
 
+import org.apache.tapestry5.Block;
+import org.apache.tapestry5.annotations.Component;
 import org.apache.tapestry5.annotations.Import;
+import org.apache.tapestry5.annotations.InjectComponent;
 import org.apache.tapestry5.annotations.Property;
 import org.apache.tapestry5.annotations.SessionState;
+import org.apache.tapestry5.corelib.components.Form;
+import org.apache.tapestry5.corelib.components.Zone;
 import org.apache.tapestry5.ioc.annotations.Inject;
 import org.apache.tapestry5.ioc.annotations.Symbol;
 
 import com.elivoa.aliprint.alisdk.AliToken;
 import com.elivoa.aliprint.dal.AgentDao;
+import com.elivoa.aliprint.dal.PrintHistoryDao;
+import com.elivoa.aliprint.data.OrderStatus;
 import com.elivoa.aliprint.data.Params;
 import com.elivoa.aliprint.entity.AliOrder;
 import com.elivoa.aliprint.entity.AliOrderEntity;
@@ -34,7 +41,8 @@ public class PrintOrder {
 		defaultAgent.setSenderPhone("13004211803");
 	}
 
-	long orderId;
+	@Property
+	Long orderId;
 
 	@Property
 	AliOrder order;
@@ -67,16 +75,6 @@ public class PrintOrder {
 			return new URL(auth_redirect_url);
 		}
 
-		// AliResult<AliOrder> orders = this.service.listOrders(token, null, 1, 1,
-		// Params.create().add("id", this.orderId).add("@withAlias"), true, true);
-		// AliResult<AliOrder> orders = this.service.listOrders(token, null, 1, 1,
-		// Params.create().add("id", this.orderId).add("@withAlias"), true, true);
-
-		// System.out.println(orders.getTotal());
-		// if (null != orders && orders.getModels().size() > 0) {
-		// this.order = orders.getModels().get(0);
-		// }
-
 		this.order = this.service.getOrder(token, this.orderId,
 				Params.create().add("@withAlias").add("@withFullAddress").add("@withSenderInfo"));
 		try {
@@ -108,6 +106,9 @@ public class PrintOrder {
 		StringBuilder sb = new StringBuilder();
 		int total = 0;
 		for (AliOrderEntity entity : this.order.getEntities()) {
+			if (!OrderStatus.WAIT_SELLER_SEND.toString().equalsIgnoreCase(entity.getEntryStatus())) {
+				continue; // pass entities with status other than WAIT_SELLER_SEND;
+			}
 			if (total > 0 && total < this.order.getEntities().size()) {
 				sb.append("|SPLITER|");
 			}
@@ -115,7 +116,7 @@ public class PrintOrder {
 			if (null == alias || alias.trim().length() == 0) {
 				alias = entity.getProductName();
 			}
-			if (!alias.equalsIgnoreCase("赠品")) {
+			if (!alias.equalsIgnoreCase("赠品") && !alias.equalsIgnoreCase("赠")) {
 				hasGift = true;
 				total += entity.getQuantity();
 			}
@@ -144,6 +145,7 @@ public class PrintOrder {
 				size = "";
 			}
 			sb.append(" ").append(颜色).append(size);
+			// sb.append("[").append(entity.getEntryStatus()).append("]");
 
 			// quantity;
 			double quantity = entity.getQuantity();
@@ -151,9 +153,10 @@ public class PrintOrder {
 				sb.append("×").append(new Double(quantity).intValue());
 			}
 		}
+
 		this.realClothesCount = total;
 		String spliter = ", ";
-		if (this.realClothesCount >= 3) {
+		if (this.realClothesCount < 3) {
 			spliter = "<br/>";
 		}
 		this.contentHTML = sb.toString().replace("|SPLITER|", spliter);
@@ -190,8 +193,40 @@ public class PrintOrder {
 		return sb.toString();
 	}
 
+	// send zone
+
+	@Property
+	String trackingNo;
+
+	@InjectComponent
+	Zone sendZone;
+
+	@Inject
+	Block sendSuccessBlock;
+
+	@Component
+	Form sendForm;
+
+	// send...
+	Object onSuccess() {
+
+		this.service.sendAll(token, orderId, this.trackingNo);
+		boolean success = false;
+		if (success) {
+			return sendSuccessBlock;
+		} else {
+			sendForm.recordError("错误：！！！");
+			return sendForm;
+		}
+	}
+
+	// services
+
 	@Inject
 	AuthService service;
+
+	@Inject
+	PrintHistoryDao historydao;
 
 	@Inject
 	AgentDao agentDao;

@@ -28,7 +28,8 @@
 								src="${product.thumbnail}" /></td>
 
 
-							<td>${product.subject}</td>
+							<td style="padding: 8px 12px; width: 200px;"><a href="http://detail.1688.com/offer/${product.offerId}.html"
+								target="_black">${product.subject}</a></td>
 							<td><div class="A-alias">
 									<input type="text" class="alias" value="${product.alias}" productId="${product.offerId}" /><a
 										class="button" href="javascript:void(0);"></a>

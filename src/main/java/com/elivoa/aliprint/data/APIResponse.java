@@ -96,7 +96,7 @@ public class APIResponse {
 
 	public boolean getBoolean(String key) {
 		Object obj = this.data.get(key);
-		if (null == obj && obj instanceof Boolean) {
+		if (null != obj && obj instanceof Boolean) {
 			return (Boolean) obj;
 		}
 		return false;

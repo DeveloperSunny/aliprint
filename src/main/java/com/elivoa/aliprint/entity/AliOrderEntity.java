@@ -84,6 +84,7 @@ public class AliOrderEntity {
 	private String specId;// =94d1d179497744028aa76873afdeba62,
 	private String productName;// =2014年dazzle地素新款水溶蕾丝雪纺拼接绣花圆领套头羊毛毛衣, guaranteeSupport;// =false
 	private String entryStatus;// =WAIT_BUYER_PAY,
+	private String entryStatusStr;// =waitbuyerpay,
 
 	private int unitPrice;// ;// =14800,
 	private double discount;// =1.0,
@@ -101,7 +102,6 @@ public class AliOrderEntity {
 	private Timestamp gmtCreate;// =20140305195456000+0800,
 
 	private int entryPayStatus;// =1,
-	private String entryStatusStr;// =waitbuyerpay,
 	private int codStatus;// =0,
 
 	private int categoryId;// =321,
