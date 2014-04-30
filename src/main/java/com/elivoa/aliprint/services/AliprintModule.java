@@ -55,7 +55,11 @@ public class AliprintModule {
 
 		// parameters
 		configuration.add("com.elivoa.aliprint.appkey", "1010132");
-		configuration.add("com.elivoa.aliprint.securitykey", "SGUd5dc6Dj2f");
+		configuration.add("com.elivoa.aliprint.securitykey", "2GsWBYOD2s");
+		// 注意signature不要有问题。
+		configuration
+				.add("com.elivoa.aliprint.authurl",
+						"http://gw.open.1688.com/auth/authorize.htm?client_id=1010132&site=china&redirect_uri=http://121.199.15.133:8180/aliprint/authorization&_aop_signature=C7F63DB5818B0B1AB064FEE750066E774752B5F6");
 
 		configuration.add("pagesize.product.alias", "10");
 

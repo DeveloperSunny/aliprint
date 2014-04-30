@@ -68,11 +68,11 @@ public class PrintOrder {
 		// validate
 		try { // TODO exception not needed.
 			if (!service.authenticate(this.token)) {
-				return new URL(auth_redirect_url);
+				return new URL(auth_url);
 			}
 		} catch (NeedAuthenticationException e) {
 			e.printStackTrace();
-			return new URL(auth_redirect_url);
+			return new URL(auth_url);
 		}
 
 		this.order = this.service.getOrder(token, this.orderId,
@@ -124,27 +124,29 @@ public class PrintOrder {
 
 			// color and size;
 			Map<String, String> specInfo = entity.getSpecInfo();
-			String 颜色 = specInfo.get("颜色");
-			if (null != 颜色) {
-				颜色 = 颜色.trim().replaceAll("色", "");
-				颜色 = 颜色.replaceAll("\\(.*\\)", "").trim();
-				颜色 = 颜色.replaceAll("（.*）", "").trim();
-				颜色 = 颜色.replaceAll("【.*】?", "").trim();
-			} else {
-				颜色 = "";
-			}
-			String size = specInfo.get("尺码");
-			if (null != size) {
-				size = size.replaceAll("\\(.*\\)", "").trim();
-				size = size.replaceAll("（.*）", "").trim();
-				size = size.replaceAll("【.*】?", "").trim();
-				if (size.trim().equals("均码")) {
+			if (null != specInfo) {
+				String 颜色 = specInfo.get("颜色");
+				if (null != 颜色) {
+					颜色 = 颜色.trim().replaceAll("色", "");
+					颜色 = 颜色.replaceAll("\\(.*\\)", "").trim();
+					颜色 = 颜色.replaceAll("（.*）", "").trim();
+					颜色 = 颜色.replaceAll("【.*】?", "").trim();
+				} else {
+					颜色 = "";
+				}
+				String size = specInfo.get("尺码");
+				if (null != size) {
+					size = size.replaceAll("\\(.*\\)", "").trim();
+					size = size.replaceAll("（.*）", "").trim();
+					size = size.replaceAll("【.*】?", "").trim();
+					if (size.trim().equals("均码")) {
+						size = "";
+					}
+				} else {
 					size = "";
 				}
-			} else {
-				size = "";
+				sb.append(" ").append(颜色).append(size);
 			}
-			sb.append(" ").append(颜色).append(size);
 			// sb.append("[").append(entity.getEntryStatus()).append("]");
 
 			// quantity;
@@ -234,7 +236,9 @@ public class PrintOrder {
 	@SessionState(create = true)
 	AliToken token;
 
-	private static String auth_redirect_url = "http://gw.open.1688.com/auth/authorize.htm?client_id=1010132&site=china&redirect_uri=http://localhost:8080/aliprint/authorization&_aop_signature=14C23331781F7594FB5FA10C32CE8AE4DD13FB4D";
+	@Inject
+	@Symbol("com.elivoa.aliprint.authurl")
+	String auth_url;
 
 	@Property(write = false)
 	@Inject

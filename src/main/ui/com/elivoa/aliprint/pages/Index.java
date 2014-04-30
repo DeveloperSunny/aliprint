@@ -24,8 +24,6 @@ import com.elivoa.aliprint.services.AuthService;
  */
 public class Index {
 
-	private static String auth_redirect_url = "http://gw.open.1688.com/auth/authorize.htm?client_id=1010132&site=china&redirect_uri=http://localhost:8080/aliprint/authorization&_aop_signature=14C23331781F7594FB5FA10C32CE8AE4DD13FB4D";
-
 	@Property(write = false)
 	@SessionState(create = true)
 	AliToken token;
@@ -40,14 +38,14 @@ public class Index {
 			boolean pass = aliservice.authenticate(this.token);
 			if (!pass) {
 				// if (!this.token.isAccessTokenAvailable()) {
-				return new URL(auth_redirect_url);
+				return new URL(auth_url);
 			}
 			// response.setStatus(302);
 			// response.setHeader("Location", auth_redirect_url);
 			// return null;
 		} catch (NeedAuthenticationException e) {
 			e.printStackTrace();
-			return new URL(auth_redirect_url);
+			return new URL(auth_url);
 		}
 		// authentication first
 		return null;
@@ -118,6 +116,10 @@ public class Index {
 	@Inject
 	@Symbol("com.elivoa.aliprint.appkey")
 	String appkey;
+
+	@Inject
+	@Symbol("com.elivoa.aliprint.authurl")
+	String auth_url;
 
 	@Property(write = false)
 	@Inject
